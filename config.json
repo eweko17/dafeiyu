@@ -1,0 +1,97 @@
+{
+  "timezone": "Asia/Taipei",
+  "brain": {
+    "primary": "ollama",
+    "fallback": "gemini",
+    "ollama": {
+      "base_url": "http://127.0.0.1:11434",
+      "model": "qwen2.5:7b-instruct",
+      "timeout_seconds": 240,
+      "think": false,
+      "keep_alive": "2m",
+      "temperature": 0.9,
+      "num_predict": 600
+    },
+    "gemini": {
+      "model": "auto",
+      "timeout_seconds": 60,
+      "temperature": 0.95,
+      "max_output_tokens": 800
+    }
+  },
+  "threads": {
+    "api_base": "https://graph.threads.net/v1.0",
+    "is_made_with_ai": true,
+    "publish_retries": 6,
+    "publish_retry_seconds": 3
+  },
+  "posting": {
+    "enabled": true,
+    "max_per_day": 3,
+    "slots": [
+      "09:30",
+      "14:30",
+      "21:30"
+    ],
+    "min_chars": 100,
+    "max_chars": 380,
+    "max_retries": 2,
+    "topic_cooldown_posts": 6
+  },
+  "replies": {
+    "enabled": true,
+    "poll_days": 7,
+    "max_per_run": 8,
+    "max_per_day": 30,
+    "min_interval_seconds": 4,
+    "max_chars": 80
+  },
+  "safety": {
+    "disclose_ai": true,
+    "blocked_keywords": [
+      "政治",
+      "選舉",
+      "投票",
+      "立委",
+      "總統",
+      "市長",
+      "政黨",
+      "宗教",
+      "基督教",
+      "佛教",
+      "道教",
+      "回教",
+      "伊斯蘭",
+      "戰爭",
+      "開戰",
+      "飛彈",
+      "屠殺",
+      "種族",
+      "自殺",
+      "憂鬱",
+      "想死",
+      "割腕",
+      "色情",
+      "裸照",
+      "約砲",
+      "性愛",
+      "投資",
+      "飆股",
+      "報明牌",
+      "借錢",
+      "貸款",
+      "詐騙",
+      "洗錢",
+      "減肥藥",
+      "壯陽",
+      "醫療建議",
+      "偏方",
+      "http://",
+      "https://",
+      "www.",
+      "加line",
+      "加賴",
+      "私訊我"
+    ]
+  }
+}

@@ -1,0 +1,11 @@
+# 讓 Git 不要把換行符號亂改，避免手機（Linux）上的 .sh 壞掉
+* text=auto
+
+*.sh   text eol=lf
+*.yml  text eol=lf
+*.py   text eol=lf
+*.md   text eol=lf
+*.json text eol=lf
+
+*.bat  text eol=crlf
+*.ps1  text eol=crlf

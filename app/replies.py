@@ -1,0 +1,192 @@
+from __future__ import annotations
+
+import logging
+import re
+import time
+from typing import Any
+
+from brain import router
+from threads_api import ThreadsError, make_client
+
+from . import persona, state, textutil
+
+log = logging.getLogger("dafeiyu.replies")
+
+BOT_HINTS = re.compile(r"(大肥魚|大肥鱼|肥魚|肥鱼|小飛鯨|小飞鲸|鯨魚娘|鲸鱼娘)")
+
+
+def _is_probably_another_fish(username: str, text: str) -> bool:
+    return bool(BOT_HINTS.search(username or "")) and ("本鯨" in text or "本鲸" in text)
+
+
+def _recent_replies_to(data: dict[str, Any], username: str) -> int:
+    cutoff = time.time() - 86400
+    count = 0
+    for item in data.get("replied", {}).values():
+        if item.get("username") == username and item.get("ts", 0) >= cutoff:
+            count += 1
+    return count
+
+
+def _generate_reply(
+    config: dict[str, Any],
+    secrets: dict[str, Any],
+    post_text: str,
+    username: str,
+    comment: str,
+) -> tuple[str, str] | None:
+    system = persona.system_prompt()
+    user = persona.reply_prompt(post_text, username, comment)
+    raw, provider = router.generate(system, user, config, secrets)
+    cleaned = textutil.clean(textutil.to_traditional(raw))
+
+    if cleaned.strip().upper() == "SKIP" or cleaned.startswith("SKIP"):
+        return None
+
+    cleaned = textutil.fit(cleaned, int(config.get("replies", {}).get("max_chars", 80)))
+    if not cleaned:
+        return None
+
+    blocked = config.get("safety", {}).get("blocked_keywords", [])
+    if textutil.contains_blocked(cleaned, blocked):
+        return None
+
+    return cleaned, provider
+
+
+def run_replies(
+    config: dict[str, Any],
+    secrets: dict[str, Any],
+    *,
+    dry_run: bool = False,
+    limit: int | None = None,
+) -> int:
+    replies_cfg = config.get("replies", {})
+    if not replies_cfg.get("enabled", True):
+        log.info("回覆功能已關閉（replies.enabled=false）")
+        return 0
+
+    client = make_client(config, secrets)
+    me = client.me()
+    my_username = str(me.get("username", ""))
+
+    data = state.load()
+    max_per_day = int(replies_cfg.get("max_per_day", 30))
+    max_per_run = int(limit or replies_cfg.get("max_per_run", 8))
+    min_interval = int(replies_cfg.get("min_interval_seconds", 4))
+    poll_days = int(replies_cfg.get("poll_days", 7))
+    blocked = config.get("safety", {}).get("blocked_keywords", [])
+
+    done_today = int(data["daily"].get("replies", 0))
+    if done_today >= max_per_day:
+        log.info("今天已回 %s 則，達到上限 %s", done_today, max_per_day)
+        return 0
+
+    cutoff = time.time() - poll_days * 86400
+    posts = [p for p in data.get("posts", []) if p.get("ts", 0) >= cutoff]
+    replied_count = 0
+
+    for post in reversed(posts):
+        if replied_count >= max_per_run or done_today >= max_per_day:
+            break
+
+        try:
+            comments = client.replies(str(post["id"]))
+        except ThreadsError as exc:
+            log.warning("讀取貼文 %s 的留言失敗：%s", post.get("id"), exc)
+            if exc.code == 10:
+                log.error("權限不足，請確認 token 有 threads_read_replies")
+                break
+            continue
+
+        # 這一串留言的 id，用來判斷某則留言是不是回在這串裡面。
+        thread_ids = {str(c.get("id", "")) for c in comments}
+        thread_ids.discard("")
+
+        for comment in comments:
+            if replied_count >= max_per_run or done_today >= max_per_day:
+                break
+
+            comment_id = str(comment.get("id", ""))
+            username = str(comment.get("username", ""))
+            body = textutil.clean(str(comment.get("text", "")))
+            parent_id = str(comment.get("replied_to", ""))
+
+            if not comment_id or not body:
+                continue
+            if comment_id in data.get("replied", {}) or comment_id in data.get("skipped", {}):
+                continue
+            if username == my_username:
+                continue
+            # 只回「這篇貼文底下」的留言，包含留言再底下的討論串。
+            if parent_id != str(post["id"]) and parent_id not in thread_ids:
+                continue
+            if _is_probably_another_fish(username, body):
+                log.info("跳過另一隻大肥魚：@%s", username)
+                continue
+            if _recent_replies_to(data, username) >= 3:
+                log.info("今天已經回過 @%s 三次，先跳過", username)
+                continue
+
+            hit = textutil.contains_blocked(body, blocked)
+            if hit:
+                log.info("跳過 @%s 的留言（命中「%s」）", username, hit)
+                with state.transaction() as fresh:
+                    fresh["skipped"][comment_id] = {
+                        "reason": f"blocked:{hit}",
+                        "username": username,
+                        "ts": time.time(),
+                    }
+                data = state.load()
+                continue
+
+            try:
+                generated = _generate_reply(config, secrets, str(post.get("text", "")), username, body)
+            except Exception as exc:  # noqa: BLE001
+                log.warning("生成回覆失敗（@%s）：%s", username, exc)
+                continue
+
+            if not generated:
+                log.info("模型選擇不回覆 @%s", username)
+                with state.transaction() as fresh:
+                    fresh["skipped"][comment_id] = {
+                        "reason": "model_skip",
+                        "username": username,
+                        "ts": time.time(),
+                    }
+                data = state.load()
+                continue
+
+            reply_text, provider = generated
+            if dry_run:
+                print(f"[dry-run] @{username}：{body}\n  → {reply_text}")
+            else:
+                try:
+                    reply_id = client.post_text(reply_text, reply_to_id=comment_id)
+                except ThreadsError as exc:
+                    log.warning("回覆 @%s 失敗：%s", username, exc)
+                    if exc.code == 10:
+                        log.error("權限不足，請確認 token 有 threads_content_publish")
+                        return replied_count
+                    continue
+
+                with state.transaction() as fresh:
+                    fresh["replied"][comment_id] = {
+                        "reply_id": reply_id,
+                        "username": username,
+                        "text": reply_text,
+                        "provider": provider,
+                        "ts": time.time(),
+                    }
+                    fresh["daily"]["replies"] = int(fresh["daily"].get("replies", 0)) + 1
+                    fresh["last_reply_at"] = time.time()
+                data = state.load()
+                log.info("已回覆 @%s：%s", username, reply_text)
+
+            replied_count += 1
+            done_today += 1
+            if not dry_run:
+                time.sleep(min_interval)
+
+    log.info("本輪回覆 %s 則（今日累計 %s）", replied_count, done_today)
+    return replied_count

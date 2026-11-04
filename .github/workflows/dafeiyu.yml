@@ -1,0 +1,88 @@
+name: 大肥魚排程
+
+# GitHub 的 cron 一律用 UTC，台灣是 UTC+8。
+on:
+  schedule:
+    - cron: "30 1 * * *"      # 台灣 09:30 發文 1
+    - cron: "30 6 * * *"      # 台灣 14:30 發文 2
+    - cron: "30 13 * * *"     # 台灣 21:30 發文 3
+    - cron: "5,35 1-15 * * *" # 台灣 09:05–23:35 每 30 分鐘回覆留言
+    - cron: "0 19 * * 6"      # 台灣週日 03:00 更新 token
+  workflow_dispatch:
+    inputs:
+      task:
+        description: "要執行的任務"
+        required: true
+        default: doctor
+        type: choice
+        options:
+          - doctor
+          - dry-run
+          - post-1
+          - post-2
+          - post-3
+          - replies
+          - refresh
+
+permissions:
+  contents: write
+
+# 避免兩個排程同時跑，造成重複發文或 state 衝突。
+concurrency:
+  group: dafeiyu
+  cancel-in-progress: false
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: 取得程式碼
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: 安裝 Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: 安裝套件
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -r requirements.txt
+
+      - name: 準備憑證
+        env:
+          THREADS_TOKEN: ${{ secrets.THREADS_TOKEN }}
+          THREADS_USER_ID: ${{ secrets.THREADS_USER_ID }}
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+        run: python scripts/gha_prepare.py
+
+      - name: 切換成 Gemini 大腦（雲端沒有 Ollama）
+        run: python scripts/switch_brain.py
+
+      - name: 執行任務
+        env:
+          SCHEDULE: ${{ github.event.schedule }}
+          TASK: ${{ inputs.task }}
+        run: python scripts/gha_task.py
+
+      - name: 存回發文與回覆紀錄
+        run: |
+          git config user.name "大肥魚"
+          git config user.email "dafeiyu@users.noreply.github.com"
+          git add state/memory.json
+          if git diff --cached --quiet; then
+            echo "狀態沒有變更，不用存。"
+            exit 0
+          fi
+          git commit -m "紀錄：$(date -u '+%Y-%m-%d %H:%M') UTC"
+          for i in 1 2 3; do
+            if git pull --rebase --autostash origin "$GITHUB_REF_NAME" && git push; then
+              echo "已存回。"
+              break
+            fi
+            sleep 5
+          done

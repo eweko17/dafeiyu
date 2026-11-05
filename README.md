@@ -8,6 +8,7 @@
 - 桌寵：附贈 `dsh-pet` 獨立版，100+ 段透明動畫，解壓就能跑
 - 平台：Windows 10/11，Python 3.10+
 - 手機：Android + Termux 也能跑（不用 .apk、不用電腦開著），見 `mobile/README.md`
+- 手機聊天 App：可以直接跟她聊天、講話、有記憶，見 `docs/手機版-App.md`（網址 <https://eweko17.github.io/dafeiyu/app/>）
 - 雲端：也可以放 GitHub Actions，電腦手機都不用開，見 `docs/GitHub-Actions-雲端版.md`
 
 ---

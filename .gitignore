@@ -6,3 +6,7 @@ state/*.lock
 state/*.tmp
 logs/
 pet/dsh-pet-win-x64/
+
+# APK 的簽章金鑰與原始 zip 不要進公開 repo
+apk/簽章金鑰/
+apk/*.zip

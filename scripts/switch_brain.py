@@ -52,14 +52,16 @@ def main() -> int:
             brain["primary"] = "gemini"
             brain["fallback"] = "groq" if has_groq else ""
             message = "已切換成 Gemini（雲端），Groq 當備援。"
-        elif has_gemini and has_groq:
-            brain["primary"] = "gemini"
-            brain["fallback"] = "groq"
-            message = "已切換成 Gemini（雲端），Groq 當備援。"
+        elif has_groq and has_gemini:
+            # GitHub Actions 是資料中心 IP，Gemini 免費層常被擋（403）。
+            # 所以雲端優先用 Groq，Gemini 當最後備援。
+            brain["primary"] = "groq"
+            brain["fallback"] = "gemini"
+            message = "已切換成 Groq（雲端），Gemini 當備援。"
         elif has_groq:
             brain["primary"] = "groq"
             brain["fallback"] = ""
-            message = "沒有 Gemini key，改用 Groq（雲端）。"
+            message = "已切換成 Groq（雲端）。"
         else:
             brain["primary"] = "gemini"
             brain["fallback"] = ""

@@ -67,7 +67,7 @@
 | `THREADS_USER_ID` | 你的 Threads 數字 id | 可不填（程式會自己抓） |
 
 > Name 要**完全一樣**（全大寫、底線）。貼上值的時候不要多空白。
-> 兩個 key 都設的話，會以 Gemini 為主、Groq 自動接手。
+> 兩個 key 都設的話，雲端會以 **Groq 為主、Gemini 備援**（GitHub 的機器是資料中心 IP，Gemini 免費層常常會回 403）。
 
 ---
 
@@ -134,7 +134,8 @@
    看不到：`THREADS_TOKEN`、`GEMINI_API_KEY`（在 Secrets）、`state/secrets.json`（被 .gitignore 排除）。
 
 4. **額度**
-   Gemini 免費層每分鐘約 15 次、每天約 1,000–1,500 次。一天 3 篇 + 幾十則回覆，用不到 5%。
+   Groq 免費層約每分鐘 30 次、每天 1,000 次；Gemini 免費層每分鐘約 15 次、每天約 1,000–1,500 次。
+   一天 3 篇 + 幾十則回覆，用不到 5%。
 
 5. **Token 過期**
    每週日會自動續期。如果超過 60 天沒跑（例如 workflow 被停用），重新產生 token 後更新 `THREADS_TOKEN`。

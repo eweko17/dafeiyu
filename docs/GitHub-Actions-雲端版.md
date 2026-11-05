@@ -137,7 +137,15 @@
    Gemini 免費層每分鐘約 15 次、每天約 1,000–1,500 次。一天 3 篇 + 幾十則回覆，用不到 5%。
 
 5. **Token 過期**
-   每週日會自動續期。如果超過 60 天沒跑（例如 workflow 被停用），重新產生 token 後，去 Secrets 更新 `THREADS_TOKEN` 就好。
+   每週日會自動續期。如果超過 60 天沒跑（例如 workflow 被停用），重新產生 token 後更新 `THREADS_TOKEN`。
+
+   **最快的做法（不用複製貼上）：**
+
+   1. 到 https://developers.facebook.com/tools/explorer/threads 按 **Generate Threads Access Token**，複製短效 token
+   2. 雙擊 `換Token.bat` → 貼上短效 token → 貼上 App Secret
+   3. 雙擊 `上傳Token.bat` → 自動把 60 天 token 寫進 GitHub Secrets
+
+   > 一定要在**短效 token 產生的 1 小時內**完成，過期就要重新產生。
 
 ---
 

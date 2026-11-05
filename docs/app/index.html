@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="zh-Hant-TW">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0e1b2c">
+<title>大肥魚</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icon-192.png">
+<link rel="icon" href="icon-192.png">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header class="topbar">
+  <img class="avatar" src="avatar.png" alt="大肥魚">
+  <div class="who">
+    <div class="name">大肥魚</div>
+    <div class="status" id="status">線上</div>
+  </div>
+  <button class="icon-btn" id="btn-settings" aria-label="設定">⚙️</button>
+</header>
+
+<main class="chat" id="chat" aria-live="polite"></main>
+
+<div class="typing" id="typing" hidden>
+  <img class="avatar small" src="avatar.png" alt="">
+  <div class="dots"><span></span><span></span><span></span></div>
+</div>
+
+<footer class="composer">
+  <button class="icon-btn mic" id="btn-mic" aria-label="語音輸入">🎤</button>
+  <textarea id="input" rows="1" placeholder="跟本鯨說點什麼…" enterkeyhint="send"></textarea>
+  <button class="send" id="btn-send" aria-label="送出">送出</button>
+</footer>
+
+<!-- 首次設定 -->
+<div class="sheet-backdrop" id="onboard" hidden>
+  <section class="sheet">
+    <img class="avatar big" src="avatar.png" alt="">
+    <h1>本鯨醒了</h1>
+    <p class="muted">先給本鯨一把 Groq 的鑰匙，這樣才能講話。<br>（只會存在你這支手機裡，不會上傳）</p>
+    <label class="field">
+      <span>Groq API Key</span>
+      <input id="onboard-key" type="password" autocomplete="off" placeholder="gsk_...">
+    </label>
+    <p class="hint">沒有嗎？<a href="https://console.groq.com/keys" target="_blank" rel="noopener">到這裡免費拿一把</a></p>
+    <button class="primary" id="btn-onboard-save">開始聊天</button>
+  </section>
+</div>
+
+<!-- 設定 -->
+<div class="sheet-backdrop" id="settings" hidden>
+  <section class="sheet">
+    <h2>設定</h2>
+
+    <label class="field">
+      <span>Groq API Key</span>
+      <input id="set-key" type="password" autocomplete="off" placeholder="gsk_...">
+    </label>
+
+    <label class="field">
+      <span>模型</span>
+      <select id="set-model"><option value="auto">自動挑選</option></select>
+    </label>
+
+    <label class="row">
+      <span>用語音唸出來</span>
+      <input type="checkbox" id="set-speak">
+    </label>
+
+    <label class="row">
+      <span>主動找你講話</span>
+      <input type="checkbox" id="set-proactive">
+    </label>
+
+    <div class="sheet-actions">
+      <button class="ghost" id="btn-clear">清空記憶</button>
+      <button class="primary" id="btn-save">儲存</button>
+    </div>
+    <button class="link" id="btn-close-settings">關閉</button>
+  </section>
+</div>
+
+<script src="app.js"></script>
+</body>
+</html>

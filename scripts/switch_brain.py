@@ -53,11 +53,11 @@ def main() -> int:
             brain["fallback"] = "groq" if has_groq else ""
             message = "已切換成 Gemini（雲端），Groq 當備援。"
         elif has_groq and has_gemini:
-            # GitHub Actions 是資料中心 IP，Gemini 免費層常被擋（403）。
-            # 所以雲端優先用 Groq，Gemini 當最後備援。
+            # GitHub Actions 是資料中心 IP，Gemini 免費層一定 403，
+            # 放進備援只會在 log 裡多一段紅字，所以直接不用它。
             brain["primary"] = "groq"
-            brain["fallback"] = "gemini"
-            message = "已切換成 Groq（雲端），Gemini 當備援。"
+            brain["fallback"] = ""
+            message = "已切換成 Groq（雲端）。Gemini 在 GitHub 上會被擋，暫不列入備援。"
         elif has_groq:
             brain["primary"] = "groq"
             brain["fallback"] = ""

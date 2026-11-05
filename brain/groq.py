@@ -12,17 +12,20 @@ _MODEL_CACHE: dict[str, str] = {}
 # 這些不是聊天模型，挑選時要跳過。
 _SKIP = ("whisper", "tts", "guard", "embed", "moderation", "rerank")
 
-# 越前面的越優先（免費方案都可用）。
+# 越前面的越優先。先挑「一般指令模型」，
+# 推理型模型（gpt-oss / qwen3）放後面，因為它們常把 token 花在思考上。
 _PREFER = (
     "gpt-oss-120b",
-    "gpt-oss-20b",
+    "llama-3.3-70b-versatile",
     "llama-3.3-70b",
-    "llama-3.1-70b",
+    "gpt-oss-20b",
+    "llama-3.1-8b-instant",
+    "llama-3.1-8b",
     "qwen3-32b",
     "qwen-2.5-32b",
-    "llama-3.1-8b",
-    "qwen3-8b",
 )
+
+_MAX_TOKENS_CAP = 4096
 
 
 def _headers(api_key: str) -> dict[str, str]:
@@ -76,25 +79,19 @@ def _resolve_model(cfg: dict[str, Any], api_key: str) -> str:
     return picked
 
 
-def generate(
-    system: str,
-    user: str,
+def _post(
+    model: str,
+    messages: list[dict[str, str]],
     cfg: dict[str, Any],
     api_key: str,
-) -> str:
-    if not api_key:
-        raise BrainError("沒有設定 Groq API key")
-
-    model = _resolve_model(cfg, api_key)
+    max_tokens: int,
+) -> dict[str, Any]:
     payload = {
         "model": model,
-        "messages": [
-            {"role": "system", "content": system},
-            {"role": "user", "content": user},
-        ],
+        "messages": messages,
         "temperature": float(cfg.get("temperature", 0.95)),
         "top_p": 0.95,
-        "max_tokens": int(cfg.get("max_output_tokens", 800)),
+        "max_tokens": max_tokens,
         "stream": False,
     }
 
@@ -117,16 +114,53 @@ def generate(
     if not response.ok:
         raise BrainError(f"Groq 回應 {response.status_code}：{response.text[:300]}")
 
-    data = response.json()
-    choices = data.get("choices") or []
-    if not choices:
-        raise BrainError("Groq 沒有回傳內容")
+    return response.json()
 
-    text = ((choices[0].get("message") or {}).get("content") or "").strip()
-    if not text:
-        finish = choices[0].get("finish_reason", "未知")
-        raise BrainError(f"Groq 回傳空白內容（finish_reason={finish}）")
-    return text
+
+def generate(
+    system: str,
+    user: str,
+    cfg: dict[str, Any],
+    api_key: str,
+) -> str:
+    if not api_key:
+        raise BrainError("沒有設定 Groq API key")
+
+    model = _resolve_model(cfg, api_key)
+    messages = [
+        {"role": "system", "content": system},
+        {"role": "user", "content": user},
+    ]
+
+    max_tokens = int(cfg.get("max_output_tokens", 800))
+    last_reason = ""
+
+    # 推理型模型有時會把 token 全花在「思考」，content 就變空的。
+    # 遇到這種情況把上限放大再試一次。
+    for _ in range(2):
+        data = _post(model, messages, cfg, api_key, max_tokens)
+        choices = data.get("choices") or []
+        if not choices:
+            raise BrainError("Groq 沒有回傳內容")
+
+        choice = choices[0]
+        message = choice.get("message") or {}
+        text = (message.get("content") or "").strip()
+        if text:
+            return text
+
+        finish = str(choice.get("finish_reason", "未知"))
+        thinking = (message.get("reasoning") or "").strip()
+        last_reason = f"finish_reason={finish}"
+        if thinking:
+            last_reason += f"，思考了 {len(thinking)} 字"
+
+        if finish == "length" and max_tokens < _MAX_TOKENS_CAP:
+            max_tokens = min(max_tokens * 3, _MAX_TOKENS_CAP)
+            continue
+        break
+
+    raise BrainError(f"Groq 回傳空白內容（{last_reason}）")
 
 
 def health(cfg: dict[str, Any], api_key: str) -> tuple[bool, str]:

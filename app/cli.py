@@ -36,8 +36,10 @@ def cmd_post(args: argparse.Namespace) -> int:
         reason = str(result.get("reason"))
         print(f"沒有發文：{reason}")
         # 「今天額度滿了」「功能關閉」是正常狀況，不算失敗；
-        # 真正的 API 錯誤才讓排程顯示紅字。
-        return 1 if reason.startswith("threads_error") else 0
+        # 模型完全掛掉、或 Threads API 出錯，才讓排程顯示紅字。
+        if reason.startswith("生成失敗") or reason.startswith("threads_error"):
+            return 1
+        return 0
     else:
         print(f"已發文：{result.get('id')}")
     return 0

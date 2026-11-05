@@ -6,13 +6,17 @@
 
 ## 網址
 
-| 用途 | 網址 |
+| 用途 | 位置 |
 |---|---|
 | 聊天本體 | <https://eweko17.github.io/dafeiyu/app/> |
 | 短網址（會自動跳轉） | <https://eweko17.github.io/> |
-| APK 下載 | <https://github.com/eweko17/dafeiyu/raw/main/apk/dafeiyu.apk> |
+| APK | **不在 GitHub**，放在自己的 OneDrive（見下方） |
 
-這三個都是公開的，手機、平板、別人的電腦都能開。
+網頁是公開的，但沒有你的 Groq Key 就不能用，也看不到你的聊天記錄。
+
+> **為什麼 APK 不在 GitHub？**
+> 這個 repo 是公開的（免費 GitHub Actions 與 Pages 的必要條件）。
+> APK 放上去等於任何人都能下載，所以改成只放在自己的 OneDrive，只有自己能拿。
 
 ---
 
@@ -42,13 +46,23 @@
 
 ---
 
-## 安裝 APK
+## 安裝 APK（從自己的 OneDrive）
 
-1. 用手機點這個連結下載：
-   <https://github.com/eweko17/dafeiyu/raw/main/apk/dafeiyu.apk>
-   （檔案大約 3.2 MB）
-2. 下載完點開，Android 會問「允許安裝未知的應用程式」，選允許。
-3. 安裝完成，桌面會出現「大肥魚」。
+APK 檔案在電腦的這個位置，OneDrive 會自動同步上去：
+
+```
+OneDrive\桌面\大肥魚\apk\dafeiyu.apk
+```
+
+手機拿法：
+
+1. 手機打開 **OneDrive** App。
+2. 依序點：`檔案` → `桌面` → `大肥魚` → `apk` → `dafeiyu.apk`。
+3. 下載後點開，Android 會問「允許安裝未知的應用程式」，選允許。
+4. 安裝完成，桌面會出現「大肥魚」。
+
+> 如果 OneDrive 裡看不到「桌面」資料夾，代表這台電腦的桌面沒有備份到 OneDrive。
+> 那就用傳輸線、Google Drive、或 LINE 傳給自己，效果一樣。
 
 需求：
 

@@ -88,6 +88,8 @@ def run() -> int:
             continue
         if name.startswith("Gemini") and primary != "gemini":
             continue
+        if name.startswith("Groq") and primary != "groq":
+            continue
         critical = True
 
     free_gb = shutil.disk_usage(ROOT).free / (1024**3)

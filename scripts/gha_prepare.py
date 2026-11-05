@@ -45,6 +45,7 @@ def main() -> int:
         return 1
 
     gemini_key = _clean(os.environ.get("GEMINI_API_KEY", ""))
+    groq_key = _clean(os.environ.get("GROQ_API_KEY", ""))
     user_id = _clean(os.environ.get("THREADS_USER_ID", ""))
     username = ""
 
@@ -66,6 +67,7 @@ def main() -> int:
         "threads_token": token,
         "threads_user_id": user_id,
         "gemini_api_key": gemini_key,
+        "groq_api_key": groq_key,
     }
     if username:
         data["threads_username"] = username
@@ -81,8 +83,8 @@ def main() -> int:
         memory.write_text("{}\n", encoding="utf-8")
 
     print(f"已寫入 {SECRETS.relative_to(ROOT)}（id={user_id}）")
-    if not gemini_key:
-        print("提醒：沒有 GEMINI_API_KEY，雲端版會沒有大腦可用。")
+    if not gemini_key and not groq_key:
+        print("提醒：GEMINI_API_KEY 和 GROQ_API_KEY 都沒設定，雲端版會沒有大腦可用。")
     return 0
 
 

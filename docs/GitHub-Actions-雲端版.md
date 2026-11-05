@@ -22,7 +22,9 @@
 
 1. **GitHub 帳號**（免費）：https://github.com/signup
 2. **Threads token**：照 `docs/設定步驟.md` 產生
-3. **Gemini API key**（雲端版**必填**，因為雲端沒有 Ollama）：https://aistudio.google.com/apikey
+3. **雲端大腦的 API key**（雲端沒有 Ollama，兩個至少要有一個）：
+   - **Gemini**（建議先試）：https://aistudio.google.com/apikey
+   - **Groq**（Gemini 不能用時的備案，完全免費）：https://console.groq.com/keys
 
 ---
 
@@ -60,10 +62,12 @@
 | Name | Secret | 必填 |
 |---|---|---|
 | `THREADS_TOKEN` | 你的 Threads access token | ✅ |
-| `GEMINI_API_KEY` | 你的 Gemini API key | ✅ |
+| `GEMINI_API_KEY` | 你的 Gemini API key | 二選一 |
+| `GROQ_API_KEY` | 你的 Groq API key | 二選一 |
 | `THREADS_USER_ID` | 你的 Threads 數字 id | 可不填（程式會自己抓） |
 
 > Name 要**完全一樣**（全大寫、底線）。貼上值的時候不要多空白。
+> 兩個 key 都設的話，會以 Gemini 為主、Groq 自動接手。
 
 ---
 
@@ -143,7 +147,8 @@
 |---|---|---|
 | 紅叉，log 寫 `缺少 THREADS_TOKEN` | Secret 名字打錯 | 回步驟 2，確認叫 `THREADS_TOKEN` |
 | 紅叉，log 寫 `Token 驗證失敗` | token 過期／複製不完整 | 重新產生 token，更新 Secret |
-| 紅叉，log 寫 `所有大腦都失敗了` | 沒有 Gemini key 或額度用完 | 檢查 `GEMINI_API_KEY`；到 AI Studio 看額度 |
+| 紅叉，log 寫 `所有大腦都失敗了` | 沒有雲端 key 或額度用完 | 檢查 `GEMINI_API_KEY`／`GROQ_API_KEY` |
+| log 寫 `Gemini 回應 403 ... free tier is not available for this project` | 這把 Gemini key 的專案沒有免費額度 | 換一把新 key，或改設 `GROQ_API_KEY` |
 | 綠勾但 Threads 沒貼文 | 今天額度滿了／`posting.enabled=false` | 看 log 的「沒有發文：…」原因 |
 | 排程沒動 | workflow 被停用，或 repo 60 天沒活動 | Actions → Enable workflow |
 | `git push` 失敗 | 兩個排程撞在一起 | 再手動跑一次即可，程式有重試 |

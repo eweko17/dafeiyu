@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import Any
 
-from . import gemini, ollama
+from . import gemini, groq, ollama
 from .errors import BrainError
 
 
@@ -37,6 +37,13 @@ def generate(
                     brain_cfg.get("gemini", {}),
                     str(secrets.get("gemini_api_key", "")).strip(),
                 )
+            elif name == "groq":
+                text = groq.generate(
+                    system,
+                    user,
+                    brain_cfg.get("groq", {}),
+                    str(secrets.get("groq_api_key", "")).strip(),
+                )
             else:
                 raise BrainError(f"未知的大腦：{name}")
             return text, name
@@ -55,8 +62,12 @@ def health(cfg: dict[str, Any], secrets: dict[str, Any]) -> list[tuple[str, bool
 
     key = str(secrets.get("gemini_api_key", "")).strip()
     if key:
-        results.append(("Gemini（備援）", True, "已設定 API key"))
+        results.append(("Gemini（雲端）", True, "已設定 API key"))
     else:
-        results.append(("Gemini（備援）", False, "未設定，主模型掛掉時會沒有備援"))
+        results.append(("Gemini（雲端）", False, "未設定 API key"))
+
+    groq_key = str(secrets.get("groq_api_key", "")).strip()
+    ok, message = groq.health(brain_cfg.get("groq", {}), groq_key)
+    results.append(("Groq（雲端）", ok, message))
 
     return results

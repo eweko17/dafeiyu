@@ -750,9 +750,9 @@ async function saveKey(raw) {
   try {
     const ids = await fetchModels();
     modelsLoaded = true;
+    state.resolvedModel = '';
     chooseModel(ids);
     state.key = key;
-    state.resolvedModel = '';
     save();
     setStatus('線上', false);
     return true;

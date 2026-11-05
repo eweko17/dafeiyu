@@ -10,6 +10,7 @@ from __future__ import annotations
 
 import json
 import os
+import re
 import sys
 from pathlib import Path
 
@@ -21,14 +22,30 @@ from threads_api import ThreadsClient  # noqa: E402
 SECRETS = ROOT / "state" / "secrets.json"
 
 
+def _clean(value: str) -> str:
+    """去掉貼上時常夾帶的引號、換行與空白。"""
+    return re.sub(r"\s+", "", value.strip().strip('"').strip("'"))
+
+
+def _diagnose(raw: str, token: str) -> None:
+    has_space = bool(re.search(r"\s", raw))
+    has_odd = bool(re.search(r"[^A-Za-z0-9_.-]", token))
+    print("除錯資訊（不會顯示 token 內容）：")
+    print(f"  原始長度={len(raw)}，清理後長度={len(token)}")
+    print("  含有空白或換行=" + ("是" if has_space else "否"))
+    print("  含有非英數字元=" + ("是" if has_odd else "否"))
+    print("  常見原因：複製到 App ID／App Secret、token 被截斷、貼到舊的 token。")
+
+
 def main() -> int:
-    token = os.environ.get("THREADS_TOKEN", "").strip()
+    raw = os.environ.get("THREADS_TOKEN", "")
+    token = _clean(raw)
     if not token:
         print("缺少 THREADS_TOKEN，請到 repo → Settings → Secrets and variables → Actions 設定。")
         return 1
 
-    gemini_key = os.environ.get("GEMINI_API_KEY", "").strip()
-    user_id = os.environ.get("THREADS_USER_ID", "").strip()
+    gemini_key = _clean(os.environ.get("GEMINI_API_KEY", ""))
+    user_id = _clean(os.environ.get("THREADS_USER_ID", ""))
     username = ""
 
     if not user_id:
@@ -36,6 +53,7 @@ def main() -> int:
             me = ThreadsClient(token, "me").me()
         except Exception as exc:  # noqa: BLE001
             print(f"Token 驗證失敗：{exc}")
+            _diagnose(raw, token)
             return 1
         user_id = str(me.get("id", "")).strip()
         username = str(me.get("username", "")).strip()

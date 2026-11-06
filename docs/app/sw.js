@@ -1,7 +1,8 @@
 /* 大肥魚 PWA Service Worker
-   只快取 App 外殼，Groq API 一律走網路、絕不快取。 */
+   只快取 App 外殼，Groq API 一律走網路、絕不快取。
+   外殼採「網路優先」：有網路就抓最新版，沒網路才用快取。 */
 
-const VERSION = 'dafeiyu-v2';
+const VERSION = 'dafeiyu-v3';
 const SHELL = [
   './',
   './index.html',
@@ -39,31 +40,19 @@ self.addEventListener('fetch', (event) => {
   const url = new URL(request.url);
   if (url.origin !== self.location.origin) return; // Groq 等外部請求直接放行
 
-  if (request.mode === 'navigate') {
-    event.respondWith(
-      fetch(request)
-        .then((response) => {
+  event.respondWith(
+    fetch(request, { cache: 'no-store' })
+      .then((response) => {
+        if (response && response.ok) {
           const copy = response.clone();
           caches.open(VERSION).then((cache) => cache.put(request, copy)).catch(() => {});
-          return response;
-        })
-        .catch(() => caches.match(request).then((hit) => hit || caches.match('./index.html')))
-    );
-    return;
-  }
-
-  event.respondWith(
-    caches.match(request).then((hit) => {
-      const network = fetch(request)
-        .then((response) => {
-          if (response && response.ok) {
-            const copy = response.clone();
-            caches.open(VERSION).then((cache) => cache.put(request, copy)).catch(() => {});
-          }
-          return response;
-        })
-        .catch(() => hit);
-      return hit || network;
-    })
+        }
+        return response;
+      })
+      .catch(() => caches.match(request).then((hit) => {
+        if (hit) return hit;
+        if (request.mode === 'navigate') return caches.match('./index.html');
+        return Response.error();
+      }))
   );
 });

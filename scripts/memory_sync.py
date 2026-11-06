@@ -336,6 +336,11 @@ def sync_once(quiet: bool = False) -> bool:
 
         merged = merge(local, remote["messages"], cleared_at)
 
+        # 寫回前再讀一次，避免剛好蓋掉這段時間桌寵新講的話
+        latest = read_pet()
+        if latest != local:
+            merged = merge(latest, merged, cleared_at)
+
         payload = {
             "summary": remote["summary"],
             "summaryTs": remote["summaryTs"],

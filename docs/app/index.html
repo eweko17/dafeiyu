@@ -79,6 +79,31 @@
       <input type="checkbox" id="set-proactive">
     </label>
 
+    <div class="section-title">記憶同步（手機 ↔ 電腦）</div>
+    <p class="section-hint">用一個私密 GitHub Gist 當共同抽屜，兩邊的對話會合在一起。金鑰只存在這支手機。</p>
+
+    <label class="field">
+      <span>GitHub 同步金鑰（只要 gist 權限）</span>
+      <input id="set-gh" type="password" autocomplete="off" placeholder="ghp_... 或 github_pat_...">
+    </label>
+
+    <label class="field">
+      <span>記憶抽屜 ID</span>
+      <input id="set-gist" type="text" autocomplete="off" spellcheck="false" placeholder="32 位英數字">
+    </label>
+
+    <label class="row">
+      <span>自動同步</span>
+      <input type="checkbox" id="set-sync">
+    </label>
+
+    <p class="section-hint" id="sync-state">尚未同步</p>
+
+    <div class="sheet-actions">
+      <button class="ghost" id="btn-sync-create">建立新抽屜</button>
+      <button class="ghost" id="btn-sync-now">立即同步</button>
+    </div>
+
     <div class="sheet-actions">
       <button class="ghost" id="btn-clear">清空記憶</button>
       <button class="primary" id="btn-save">儲存</button>

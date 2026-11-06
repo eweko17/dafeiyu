@@ -11,6 +11,12 @@ const MAX_STORED = 300;      // 本機最多留幾則訊息
 const CONTEXT_TURNS = 20;    // 每次送給模型的最近訊息數
 const PROACTIVE_GAP = 30 * 60 * 1000; // 兩次主動訊息至少隔 30 分鐘
 
+// 記憶同步（手機 ↔ 電腦）：兩邊共用一個私密 GitHub Gist
+const GH_API = 'https://api.github.com';
+const SYNC_FILE = 'dafeiyu-memory.json';
+const SYNC_MAX = 400;        // 雲端最多留幾則訊息
+const SYNC_INTERVAL = 5 * 60 * 1000; // 開著的時候每 5 分鐘對一次
+
 const PERSONA = `你是「大肥魚」，一隻住在主人手機裡的藍鯨娘。不是魚，是藍鯨，但懶得每次都糾正。
 
 基本資料
@@ -61,9 +67,16 @@ const state = {
   proactive: true,
   messages: [],
   summary: '',
+  summaryTs: 0,
   lastActive: 0,
   lastProactive: 0,
-  resolvedModel: ''
+  resolvedModel: '',
+  // 記憶同步
+  ghToken: '',
+  gistId: '',
+  syncOn: true,
+  syncAt: 0,
+  clearedAt: 0
 };
 
 let busy = false;
@@ -72,6 +85,8 @@ let recognizer = null;
 let listening = false;
 let proactiveTimer = null;
 let greetedThisSession = false;
+let syncBusy = false;
+let syncTimer = null;
 
 /* ---------------- DOM ---------------- */
 
@@ -90,7 +105,11 @@ const el = {
   setKey: $('set-key'),
   setModel: $('set-model'),
   setSpeak: $('set-speak'),
-  setProactive: $('set-proactive')
+  setProactive: $('set-proactive'),
+  setGh: $('set-gh'),
+  setGist: $('set-gist'),
+  setSync: $('set-sync'),
+  syncState: $('sync-state')
 };
 
 /* ---------------- 存取 ---------------- */
@@ -109,9 +128,15 @@ function load() {
   state.speak = !!raw.speak;
   state.proactive = raw.proactive !== false;
   state.summary = typeof raw.summary === 'string' ? raw.summary : '';
+  state.summaryTs = Number(raw.summaryTs) || 0;
   state.messages = Array.isArray(raw.messages) ? raw.messages.filter(isGoodMessage) : [];
   state.lastActive = Number(raw.lastActive) || 0;
   state.lastProactive = Number(raw.lastProactive) || 0;
+  state.ghToken = typeof raw.ghToken === 'string' ? raw.ghToken : '';
+  state.gistId = typeof raw.gistId === 'string' ? raw.gistId : '';
+  state.syncOn = raw.syncOn !== false;
+  state.syncAt = Number(raw.syncAt) || 0;
+  state.clearedAt = Number(raw.clearedAt) || 0;
 }
 
 function save() {
@@ -122,9 +147,15 @@ function save() {
       speak: state.speak,
       proactive: state.proactive,
       summary: state.summary,
+      summaryTs: state.summaryTs,
       messages: state.messages.slice(-MAX_STORED),
       lastActive: state.lastActive,
-      lastProactive: state.lastProactive
+      lastProactive: state.lastProactive,
+      ghToken: state.ghToken,
+      gistId: state.gistId,
+      syncOn: state.syncOn,
+      syncAt: state.syncAt,
+      clearedAt: state.clearedAt
     }));
   } catch (err) {
     // 空間滿了就只留最近的
@@ -135,9 +166,15 @@ function save() {
         speak: state.speak,
         proactive: state.proactive,
         summary: state.summary,
+        summaryTs: state.summaryTs,
         messages: state.messages.slice(-80),
         lastActive: state.lastActive,
-        lastProactive: state.lastProactive
+        lastProactive: state.lastProactive,
+        ghToken: state.ghToken,
+        gistId: state.gistId,
+        syncOn: state.syncOn,
+        syncAt: state.syncAt,
+        clearedAt: state.clearedAt
       }));
     } catch (err2) { /* 放棄 */ }
   }
@@ -440,10 +477,244 @@ async function maybeSummarize() {
     const text = result.text.trim();
     if (text && text !== '無') {
       state.summary = text.slice(0, 600);
+      state.summaryTs = Date.now();
       save();
     }
   } catch (err) {
     summarizeAt = 0; // 失敗就下次再試
+  }
+}
+
+/* ---------------- 記憶同步（手機 ↔ 電腦） ---------------- */
+
+function syncReady() {
+  return !!(state.ghToken && state.gistId);
+}
+
+function ghHeaders() {
+  return {
+    Authorization: 'Bearer ' + state.ghToken,
+    Accept: 'application/vnd.github+json',
+    'Content-Type': 'application/json'
+  };
+}
+
+function ghError(status, body) {
+  if (status === 401) return '同步金鑰不對（401），重新貼一次。';
+  if (status === 403) return '金鑰沒有 gist 權限（403），去 GitHub 重新做一把。';
+  if (status === 404) return '找不到記憶抽屜（404），確認 ID 對不對。';
+  if (status === 422) return '抽屜內容格式被拒絕（422）。';
+  return 'GitHub 回應 ' + status + '：' + String(body || '').slice(0, 100);
+}
+
+/** 雲端與本機共用的訊息格式：{ role, text, ts, src } */
+function normalizeMsg(m, src) {
+  if (!m || (m.role !== 'user' && m.role !== 'assistant')) return null;
+  const text = typeof m.text === 'string' ? m.text
+    : (typeof m.content === 'string' ? m.content : '');
+  if (!text) return null;
+  const out = {
+    role: m.role,
+    text: text,
+    ts: Number(m.ts) || 0,
+    src: typeof m.src === 'string' ? m.src : (src || 'phone')
+  };
+  if (typeof m.meme === 'string' && m.meme) out.meme = m.meme;
+  return out;
+}
+
+function msgKey(m) {
+  return m.role + '|' + (Number(m.ts) || 0) + '|' + m.text;
+}
+
+function mergeMessages(local, remote, clearedAt) {
+  const map = new Map();
+  const cut = Number(clearedAt) || 0;
+  const all = (Array.isArray(local) ? local : []).concat(Array.isArray(remote) ? remote : []);
+  for (const raw of all) {
+    let m = normalizeMsg(raw);
+    if (!m) continue;
+    if (cut && (m.ts || 0) <= cut) continue; // 已經被「清空記憶」清掉的舊訊息
+    const k = msgKey(m);
+    const old = map.get(k);
+    if (old) {
+      // 同一則訊息保留兩邊的額外欄位（例如電腦端的配圖）
+      m = Object.assign({}, old, m);
+      if (!m.meme && old.meme) m.meme = old.meme;
+    }
+    map.set(k, m);
+  }
+  return Array.from(map.values())
+    .sort((a, b) => (a.ts || 0) - (b.ts || 0))
+    .slice(-SYNC_MAX);
+}
+
+function setSyncState(text) {
+  if (el.syncState) el.syncState.textContent = text;
+}
+
+function syncStamp(ts) {
+  if (!ts) return '尚未同步';
+  const d = new Date(ts);
+  const pad = (n) => String(n).padStart(2, '0');
+  return '已同步 ' + (d.getMonth() + 1) + '/' + d.getDate() + ' ' + pad(d.getHours()) + ':' + pad(d.getMinutes());
+}
+
+async function gistRead() {
+  const res = await fetch(GH_API + '/gists/' + encodeURIComponent(state.gistId), {
+    headers: ghHeaders(),
+    cache: 'no-store'
+  });
+  if (!res.ok) {
+    const body = await res.text().catch(() => '');
+    throw new Error(ghError(res.status, body));
+  }
+  const data = await res.json();
+  const file = data.files && data.files[SYNC_FILE];
+  if (!file) return { messages: [], summary: '', summaryTs: 0, clearedAt: 0 };
+  let content = file.content || '';
+  if (file.truncated && file.raw_url) {
+    const raw = await fetch(file.raw_url, { cache: 'no-store' });
+    if (raw.ok) content = await raw.text();
+  }
+  try {
+    const parsed = JSON.parse(content);
+    return {
+      messages: Array.isArray(parsed.messages) ? parsed.messages : [],
+      summary: typeof parsed.summary === 'string' ? parsed.summary : '',
+      summaryTs: Number(parsed.summaryTs) || 0,
+      clearedAt: Number(parsed.clearedAt) || 0
+    };
+  } catch (err) {
+    return { messages: [], summary: '', summaryTs: 0, clearedAt: 0 };
+  }
+}
+
+function syncPayload() {
+  return {
+    version: 1,
+    updated: new Date().toISOString(),
+    summary: state.summary || '',
+    summaryTs: Number(state.summaryTs) || 0,
+    clearedAt: Number(state.clearedAt) || 0,
+    messages: state.messages.map((m) => {
+      const out = { role: m.role, text: m.text, ts: m.ts, src: m.src || 'phone' };
+      if (m.meme) out.meme = m.meme;
+      return out;
+    })
+  };
+}
+
+async function gistWrite() {
+  const res = await fetch(GH_API + '/gists/' + encodeURIComponent(state.gistId), {
+    method: 'PATCH',
+    headers: ghHeaders(),
+    body: JSON.stringify({
+      files: { [SYNC_FILE]: { content: JSON.stringify(syncPayload()) } }
+    })
+  });
+  if (!res.ok) {
+    const body = await res.text().catch(() => '');
+    throw new Error(ghError(res.status, body));
+  }
+}
+
+/** 把本機與雲端合併，回寫雲端。silent=true 時失敗不吵人。 */
+async function syncNow(silent) {
+  if (!syncReady()) {
+    if (!silent) toast('要先填同步金鑰和抽屜 ID 喔。');
+    return false;
+  }
+  if (syncBusy) return false;
+  syncBusy = true;
+  if (!silent) setStatus('同步中…', true);
+
+  try {
+    const remote = await gistRead();
+    const before = state.messages.length;
+    const clearedAt = Math.max(Number(state.clearedAt) || 0, remote.clearedAt || 0);
+    state.clearedAt = clearedAt;
+    const merged = mergeMessages(state.messages, remote.messages, clearedAt);
+    state.messages = merged;
+
+    // 長期記憶取比較新的那一份
+    if (remote.summary && remote.summaryTs > (Number(state.summaryTs) || 0)) {
+      state.summary = remote.summary;
+      state.summaryTs = remote.summaryTs;
+    }
+
+    save();
+    if (!busy && merged.length !== before) renderAll();
+
+    await gistWrite();
+    state.syncAt = Date.now();
+    save();
+    setSyncState(syncStamp(state.syncAt) + '（' + merged.length + ' 則）');
+    if (!silent) toast('記憶同步好了。');
+    return true;
+  } catch (err) {
+    setSyncState('同步失敗：' + (err && err.message ? err.message : '未知錯誤'));
+    if (!silent) toast(err && err.message ? err.message : '同步失敗。');
+    return false;
+  } finally {
+    syncBusy = false;
+    if (!silent && !busy) setStatus('線上', false);
+  }
+}
+
+function scheduleSync(delay) {
+  if (!state.syncOn || !syncReady()) return;
+  clearTimeout(syncTimer);
+  syncTimer = setTimeout(() => { syncNow(true); }, delay === undefined ? 4000 : delay);
+}
+
+async function createGist() {
+  const token = String(el.setGh.value || '').trim();
+  if (!token) {
+    toast('先貼上 GitHub 金鑰。');
+    return;
+  }
+  state.ghToken = token;
+  setStatus('建立抽屜…', true);
+  try {
+    const res = await fetch(GH_API + '/gists', {
+      method: 'POST',
+      headers: ghHeaders(),
+      body: JSON.stringify({
+        description: '大肥魚記憶（手機＋電腦同步）',
+        public: false,
+        files: { [SYNC_FILE]: { content: JSON.stringify(syncPayload()) } }
+      })
+    });
+    if (!res.ok) {
+      const body = await res.text().catch(() => '');
+      throw new Error(ghError(res.status, body));
+    }
+    const data = await res.json();
+    state.gistId = String(data.id || '');
+    el.setGist.value = state.gistId;
+    state.syncAt = Date.now();
+    save();
+    setStatus('線上', false);
+    setSyncState('抽屜建好了：' + state.gistId);
+    toast('抽屜建好了，把這串 ID 記下來給電腦用。');
+  } catch (err) {
+    state.ghToken = '';
+    setStatus('建立失敗', false);
+    toast(err && err.message ? err.message : '建立失敗。');
+  }
+}
+
+async function testGithub(raw) {
+  const token = String(raw || '').trim();
+  if (!token) return false;
+  try {
+    const res = await fetch(GH_API + '/user', {
+      headers: { Authorization: 'Bearer ' + token, Accept: 'application/vnd.github+json' }
+    });
+    return res.ok;
+  } catch (err) {
+    return false;
   }
 }
 
@@ -573,13 +844,14 @@ function speak(text) {
 /* ---------------- 送出 ---------------- */
 
 function pushMessage(role, text) {
-  const msg = { role: role, text: text, ts: Date.now() };
+  const msg = { role: role, text: text, ts: Date.now(), src: 'phone' };
   state.messages.push(msg);
   if (state.messages.length > MAX_STORED) {
     state.messages = state.messages.slice(-MAX_STORED);
   }
   state.lastActive = Date.now();
   save();
+  scheduleSync();
   return msg;
 }
 
@@ -730,6 +1002,12 @@ function openSettings() {
   el.setModel.value = state.model || 'auto';
   el.setSpeak.checked = state.speak;
   el.setProactive.checked = state.proactive;
+  el.setGh.value = state.ghToken || '';
+  el.setGist.value = state.gistId || '';
+  el.setSync.checked = state.syncOn;
+  setSyncState(syncReady()
+    ? syncStamp(state.syncAt) + (state.messages.length ? '（' + state.messages.length + ' 則）' : '')
+    : '尚未設定同步');
   openSheet(el.settings);
   fillModelOptions();
 }
@@ -838,6 +1116,18 @@ function bind() {
       const ok = await saveKey(typed);
       if (!ok) return;
     }
+    const gh = el.setGh.value.trim();
+    if (gh && gh !== state.ghToken) {
+      const ok = await testGithub(gh);
+      if (!ok) {
+        toast('這把 GitHub 金鑰打不開，確認有勾 gist 權限。');
+        return;
+      }
+    }
+    state.ghToken = gh;
+    state.gistId = el.setGist.value.trim();
+    state.syncOn = el.setSync.checked;
+
     state.model = el.setModel.value || 'auto';
     state.resolvedModel = '';
     state.speak = el.setSpeak.checked;
@@ -847,19 +1137,34 @@ function bind() {
     toast('記下來了。');
     if (state.speak) speak('本鯨記下了。');
     scheduleProactive();
+    if (syncReady() && state.syncOn) syncNow(true);
   });
 
+  $('btn-sync-now').addEventListener('click', async () => {
+    const gh = el.setGh.value.trim();
+    if (gh) state.ghToken = gh;
+    state.gistId = el.setGist.value.trim();
+    save();
+    await syncNow(false);
+  });
+
+  $('btn-sync-create').addEventListener('click', createGist);
+
   $('btn-clear').addEventListener('click', () => {
-    if (!confirm('要把本鯨的記憶全部清掉嗎？清掉就認不得你了喔。')) return;
+    const cloud = syncReady() ? '（雲端那份也會一起清掉）' : '';
+    if (!confirm('要把本鯨的記憶全部清掉嗎？' + cloud + '清掉就認不得你了喔。')) return;
     state.messages = [];
     state.summary = '';
+    state.summaryTs = 0;
     state.lastProactive = 0;
     state.lastActive = 0;
+    state.clearedAt = Date.now();
     summarizeAt = 0;
     save();
     renderAll();
     closeSheet(el.settings);
     toast('記憶清空了。本鯨現在是一張白紙。');
+    if (syncReady() && state.syncOn) syncNow(true);
   });
 
   document.addEventListener('visibilitychange', () => {
@@ -867,6 +1172,7 @@ function bind() {
       state.lastActive = Date.now();
       maybeGreet();
       scheduleProactive();
+      if (syncReady() && state.syncOn) syncNow(true);
     }
   });
 
@@ -895,13 +1201,18 @@ async function boot() {
   if (!state.key) {
     setStatus('還沒連上大腦', false);
     openOnboard();
-    return;
+  } else {
+    setStatus('線上', false);
+    fillModelOptions();
+    maybeGreet();
+    scheduleProactive();
   }
 
-  setStatus('線上', false);
-  fillModelOptions();
-  maybeGreet();
-  scheduleProactive();
+  // 記憶同步：開起來先對一次，之後每 5 分鐘對一次
+  if (syncReady() && state.syncOn) syncNow(true);
+  setInterval(() => {
+    if (!document.hidden && syncReady() && state.syncOn) syncNow(true);
+  }, SYNC_INTERVAL);
 
   if (!speechAvailable()) {
     el.mic.style.opacity = '0.45';

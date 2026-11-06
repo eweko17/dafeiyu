@@ -284,6 +284,25 @@ textarea:focus { border-color: rgba(77, 163, 255, .55); }
   margin-top: 18px;
 }
 
+.section-title {
+  margin: 22px 0 4px;
+  padding-top: 16px;
+  border-top: 1px solid var(--line);
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--brand);
+  text-align: left;
+  letter-spacing: .02em;
+}
+
+.section-hint {
+  margin: 0 0 12px;
+  font-size: 12px;
+  line-height: 1.6;
+  color: var(--muted);
+  text-align: left;
+}
+
 .primary, .ghost {
   flex: 1;
   padding: 13px;

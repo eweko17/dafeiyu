@@ -1,7 +1,7 @@
 /* 大肥魚 PWA Service Worker
    只快取 App 外殼，Groq API 一律走網路、絕不快取。 */
 
-const VERSION = 'dafeiyu-v1';
+const VERSION = 'dafeiyu-v2';
 const SHELL = [
   './',
   './index.html',

@@ -2,13 +2,13 @@
 
 一隻住在 Threads 上的 AI 鯨魚女僕。**完全免費**、資料留在自己的筆電、不用付任何 API 費用。
 
-- 大腦：本機 Ollama（Qwen2.5 7B）為主，Gemini 免費額度當備援
+- 大腦：本機 Ollama 或 Groq（免費），可互換
 - 發文：一天最多 3 篇，繁體中文、台灣用語
 - 回覆：會回覆自己貼文底下的每一則新留言
 - 桌寵：附贈 `dsh-pet` 獨立版，100+ 段透明動畫，解壓就能跑
 - 平台：Windows 10/11，Python 3.10+
-- 手機：Android + Termux 也能跑（不用 .apk、不用電腦開著），見 `mobile/README.md`
-- 手機聊天 App：可以直接跟她聊天、講話、有記憶，見 `docs/手機版-App.md`（網址 <https://eweko17.github.io/dafeiyu/app/>）
+- 手機：PWA（加到主畫面）或 APK，聊天／語音／記憶，見 `docs/手機版-App.md`（網址 <https://eweko17.github.io/dafeiyu/app/>）
+- 記憶同步：手機 ↔ 電腦共用同一份記憶（私密 GitHub Gist）
 - 雲端：也可以放 GitHub Actions，電腦手機都不用開，見 `docs/GitHub-Actions-雲端版.md`
 
 ---
@@ -101,9 +101,9 @@ powershell -ExecutionPolicy Bypass -File .\scripts\install_tasks.ps1
 ├── logs/                每天一份執行紀錄
 ├── docs/                設定步驟、App Review 申請資料
 ├── pet/                 桌寵
-├── mobile/              手機版（Android + Termux）
-├── scripts/             安裝／移除排程
+├── scripts/             安裝／移除排程、記憶同步
 ├── install.ps1          一鍵安裝
+├── 同步記憶.bat          手機 ↔ 電腦記憶同步
 └── 大肥魚.bat           日常指令入口
 ```
 
@@ -158,14 +158,14 @@ powershell -ExecutionPolicy Bypass -File .\scripts\resume_tasks.ps1   # 恢復
 
 ## 手機版（Android）
 
-手機**不能**跑 Ollama，所以手機版改用 Gemini 免費額度當大腦；沒有桌寵，只有發文＋回覆。
+手機是**聊天 App**，不是發文機器人：可以聊天、語音輸入、語音朗讀、有記憶、會主動找你。
 
-- 不是 .apk，是用 **Termux**（Android 上的免費終端機）跑同一份程式
-- 設定好之後可以關掉 Termux 視窗，大肥魚會在背景繼續跑
-- 排程跟電腦版一樣：09:30 / 14:30 / 21:30 發文、每 30 分鐘回覆、每週日更新 token
-- 需要：Termux（從 F-Droid 安裝）＋ Gemini API key（免費）
+- 網址：<https://eweko17.github.io/dafeiyu/app/>
+- 用 Chrome 打開 →「加到主畫面」就是 PWA；想更像 App 可以裝 APK（放自己的 OneDrive）
+- 大腦用 Groq（免費），跟雲端版可以共用同一把 key
+- 記憶存在手機瀏覽器；開啟「記憶同步」後會跟電腦桌寵共用同一份記憶
 
-完整步驟在 `mobile/README.md`。
+完整步驟在 `docs/手機版-App.md`。
 
 ---
 
@@ -209,13 +209,13 @@ powershell -ExecutionPolicy Bypass -File .\scripts\resume_tasks.ps1   # 恢復
 如果覺得太慢，把 `config.json` 的 `brain.ollama.model` 改成 `qwen2.5:3b-instruct`（已裝好），速度約快一倍，內容會比較跳一點。
 
 **Q：可以關掉筆電嗎？**
-可以。把排程搬到 **GitHub Actions**（`docs/GitHub-Actions-雲端版.md`）就完全不用開機；或搬到手機（`mobile/README.md`）。
+可以。把排程搬到 **GitHub Actions**（`docs/GitHub-Actions-雲端版.md`）就完全不用開機。
 只關筆電、什麼都不做的話，那幾天就不會發文；開機後 `StartWhenAvailable` 會補跑一次。
 不管選哪個，記得先關掉電腦排程，不然會重複發文。
 
 **Q：手機可以跑嗎？一定要 .apk 嗎？**
-可以跑，但不需要 .apk。用 Termux 跑同一份程式就好，設定完可以關掉視窗在背景執行。
-手機沒有 Ollama，所以大腦要換成 Gemini（免費額度）。詳見 `mobile/README.md`。
+可以，但不一定要 .apk。用 Chrome 打開 <https://eweko17.github.io/dafeiyu/app/>，「加到主畫面」就能當 App 用。
+想更像一般 App 再裝 APK（`apk\dafeiyu.apk`，放自己的 OneDrive）。詳見 `docs/手機版-App.md`。
 
 **Q：Token 過期怎麼辦？**
 每週日會自動更新。如果超過 60 天沒開機，重新跑一次 `docs/設定步驟.md` 的產生 token 流程，再 `.\大肥魚.bat setup`。

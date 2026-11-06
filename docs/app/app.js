@@ -560,6 +560,16 @@ function syncStamp(ts) {
   return '已同步 ' + (d.getMonth() + 1) + '/' + d.getDate() + ' ' + pad(d.getHours()) + ':' + pad(d.getMinutes());
 }
 
+/** 用來判斷「雲端和本機是不是同一份」，一樣就不必再寫一次。 */
+function fingerprint(messages, summary, summaryTs, clearedAt) {
+  return JSON.stringify([
+    Number(clearedAt) || 0,
+    Number(summaryTs) || 0,
+    summary || '',
+    messages.map(msgKey)
+  ]);
+}
+
 async function gistRead() {
   const res = await fetch(GH_API + '/gists/' + encodeURIComponent(state.gistId), {
     headers: ghHeaders(),
@@ -646,7 +656,11 @@ async function syncNow(silent) {
     save();
     if (!busy && merged.length !== before) renderAll();
 
-    await gistWrite();
+    const remoteNorm = mergeMessages([], remote.messages, 0);
+    const remoteFp = fingerprint(remoteNorm, remote.summary, remote.summaryTs, remote.clearedAt);
+    const localFp = fingerprint(state.messages, state.summary, state.summaryTs, state.clearedAt);
+    if (localFp !== remoteFp) await gistWrite();
+
     state.syncAt = Date.now();
     save();
     setSyncState(syncStamp(state.syncAt) + '（' + merged.length + ' 則）');

@@ -46,11 +46,8 @@ const PROMPTS = {
 };
 
 const PREFER_MODELS = [
-  'llama-3.3-70b-versatile',
-  'llama-3.3-70b',
   'gpt-oss-120b',
-  'llama-3.1-8b-instant',
-  'llama-3.1-8b',
+  'qwen3.8-27b',
   'gpt-oss-20b',
   'qwen3-32b',
   'qwen-2.5-32b'
@@ -289,7 +286,7 @@ function chooseModel(ids) {
       return hit.id;
     }
   }
-  state.resolvedModel = ids[0] || 'llama-3.3-70b-versatile';
+  state.resolvedModel = ids[0] || 'openai/gpt-oss-120b';
   return state.resolvedModel;
 }
 
@@ -300,7 +297,7 @@ async function modelFor() {
     const ids = await fetchModels();
     return chooseModel(ids);
   } catch (err) {
-    return 'llama-3.3-70b-versatile';
+    return 'openai/gpt-oss-120b';
   }
 }
 

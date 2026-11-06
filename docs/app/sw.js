@@ -2,7 +2,7 @@
    只快取 App 外殼，Groq API 一律走網路、絕不快取。
    外殼採「網路優先」：有網路就抓最新版，沒網路才用快取。 */
 
-const VERSION = 'dafeiyu-v3';
+const VERSION = 'dafeiyu-v4';
 const SHELL = [
   './',
   './index.html',

@@ -16,11 +16,8 @@ _SKIP = ("whisper", "tts", "guard", "embed", "moderation", "rerank")
 # 推理型模型（gpt-oss / qwen3）放後面，因為它們常把 token 花在思考上。
 _PREFER = (
     "gpt-oss-120b",
-    "llama-3.3-70b-versatile",
-    "llama-3.3-70b",
+    "qwen3.8-27b",
     "gpt-oss-20b",
-    "llama-3.1-8b-instant",
-    "llama-3.1-8b",
     "qwen3-32b",
     "qwen-2.5-32b",
 )

@@ -159,7 +159,12 @@ def run_replies(
             comment_id = str(comment.get("id", ""))
             username = str(comment.get("username", ""))
             body = textutil.clean(str(comment.get("text", "")))
-            parent_id = str(comment.get("replied_to", ""))
+            # Threads API 的 replied_to 有時候是字串，有時候是 {"id": "..."}。
+            parent_raw = comment.get("replied_to")
+            if isinstance(parent_raw, dict):
+                parent_id = str(parent_raw.get("id", ""))
+            else:
+                parent_id = str(parent_raw or "")
 
             if not comment_id or not body:
                 continue

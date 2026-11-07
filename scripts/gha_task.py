@@ -39,6 +39,12 @@ def main() -> int:
     schedule = (os.environ.get("SCHEDULE") or "").strip()
     args = SCHEDULE_TASKS.get(schedule)
 
+    if args is None and schedule:
+        # 排程字串對不上（例如 cron 剛改、GitHub 還留著舊的），
+        # 寧可照常跑 auto，也不要直接失敗。
+        print(f"沒對應到排程「{schedule}」，改用 auto。", flush=True)
+        args = ["auto"]
+
     if args is None:
         task = (os.environ.get("TASK") or "doctor").strip()
         args = MANUAL_TASKS.get(task)

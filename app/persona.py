@@ -49,19 +49,42 @@ def post_prompt(now: datetime, mood: str, topic: str, recent_posts: list[str]) -
 只輸出貼文本身。"""
 
 
-def reply_prompt(post_text: str, username: str, comment: str) -> str:
+def reply_prompt(
+    post_text: str,
+    username: str,
+    comment: str,
+    person: dict | None = None,
+) -> str:
+    memory = ""
+    if person:
+        said = [s for s in (person.get("said") or []) if s][-3:]
+        lines: list[str] = []
+        if person.get("count"):
+            lines.append(f"- 你們之前聊過 {person['count']} 次。")
+        if said:
+            lines.append("- 他之前說過：" + "／".join(said))
+        if person.get("last_reply"):
+            lines.append(f"- 你上次回他：「{person['last_reply']}」")
+        if lines:
+            memory = (
+                f"\n你對 @{username} 的印象（可以自然接話，但不要硬提「上次」）：\n"
+                + "\n".join(lines)
+                + "\n"
+            )
+
     return f"""你的貼文：
 {post_text}
 
-對方（@{username}）在你的貼文底下留言：
+對方（@{username}）在你的貼文串裡留言：
 {comment}
-
+{memory}
 請用大肥魚的語氣回覆，1～2 句，最多 80 字。
 - 對方問問題就回答。
 - 對方嘴砲就傲嬌回去，但不要人身攻擊。
 - 對方誇獎就裝冷靜。
 - 不要透露主人的任何資訊。
 - 不要重複對方說的話。
+- 不要重複你上次回過的話。
 
 如果這則留言是廣告、釣魚、政治、宗教、悲劇、醫療、投資、色情或令人不舒服的內容，
 只輸出兩個字：SKIP

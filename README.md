@@ -18,11 +18,12 @@
 | 功能 | 狀態 | 說明 |
 |---|---|---|
 | 自己發文 | ✅ 現在就能用 | 免 Meta App Review |
-| 回覆自己貼文底下的留言 | ✅ 現在就能用 | 免 App Review |
+| 回覆自己貼文底下的留言 | ✅ 現在就能用 | 免 App Review；留言串裡的下層回覆也會回 |
+| 記住來留言的人 | ✅ 現在就能用 | 記得見過幾次、說過什麼、上次回什麼 |
 | 主動回覆陌生人的公開貼文 | ⏳ 需審核 | 需要 `threads_keyword_search`，Meta 規定未通過前只能搜到自己的貼文 |
 | 桌寵 | ✅ 現在就能用 | 獨立版，不需 DSH / Node |
 
-「主動回覆陌生人」的申請資料放在 `docs/app-review/`。這是免費但需要等待的流程，通過與否由 Meta 決定。
+「主動回覆陌生人」的申請資料與步驟放在 `docs/app-review/申請-主動回覆陌生人.md`。這是免費但需要等待的流程，通過與否由 Meta 決定。
 
 ---
 
@@ -114,6 +115,8 @@ powershell -ExecutionPolicy Bypass -File .\scripts\install_tasks.ps1
 ```powershell
 .\大肥魚.bat doctor              # 健康檢查
 .\大肥魚.bat status              # 今天發了幾篇、回了幾則
+.\大肥魚.bat people              # 看牠記得哪些人、聊過什麼
+.\大肥魚.bat auto                # 時間到了就發文，順便回覆（雲端排程用）
 .\大肥魚.bat post --dry-run      # 預覽一篇
 .\大肥魚.bat post                # 發一篇
 .\大肥魚.bat replies --dry-run   # 預覽回覆
@@ -175,7 +178,7 @@ powershell -ExecutionPolicy Bypass -File .\scripts\resume_tasks.ps1   # 恢復
 
 - 公開 repo 的 Actions **完全免費、不限分鐘**
 - token 放在 GitHub Secrets，不會出現在程式碼裡
-- 排程一樣是 09:30 / 14:30 / 21:30 發文、每 30 分鐘回覆
+- 排程每 30 分鐘跑一次 `auto`（台灣 08:03–23:33，刻意避開整點）：時間到了就發文，順便回覆留言
 - 缺點：GitHub 的排程會延遲 3–15 分鐘；repo 會多出一些「紀錄：…」的 commit
 
 完整步驟在 `docs/GitHub-Actions-雲端版.md`。

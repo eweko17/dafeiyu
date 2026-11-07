@@ -16,16 +16,15 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 
 # 排程（UTC）→ 指令
+# 台灣時間 = UTC+8；:03/:33 是刻意避開整點與半點，GitHub 在整點最容易延遲或掉單。
 SCHEDULE_TASKS: dict[str, list[str]] = {
-    "30 1 * * *": ["post", "--slot", "1"],
-    "30 6 * * *": ["post", "--slot", "2"],
-    "30 13 * * *": ["post", "--slot", "3"],
-    "5,35 1-15 * * *": ["replies"],
+    "3,33 0-15 * * *": ["auto"],
     "0 19 * * 6": ["refresh-token"],
 }
 
 # 手動觸發（workflow_dispatch）→ 指令
 MANUAL_TASKS: dict[str, list[str]] = {
+    "auto": ["auto"],
     "post-1": ["post", "--slot", "1"],
     "post-2": ["post", "--slot", "2"],
     "post-3": ["post", "--slot", "3"],

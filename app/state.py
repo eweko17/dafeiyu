@@ -18,6 +18,7 @@ DEFAULT_STATE: dict[str, Any] = {
     "posts": [],
     "replied": {},
     "skipped": {},
+    "people": {},
     "daily": {"date": None, "posts": 0, "replies": 0},
     "last_post_at": None,
     "last_reply_at": None,
@@ -38,6 +39,7 @@ def _read() -> dict[str, Any]:
     merged.setdefault("posts", [])
     merged.setdefault("replied", {})
     merged.setdefault("skipped", {})
+    merged.setdefault("people", {})
 
     today = date.today().isoformat()
     if merged["daily"].get("date") != today:
@@ -80,3 +82,9 @@ def prune(data: dict[str, Any], days: int = 60) -> None:
     for key in ("replied", "skipped"):
         bucket = data.get(key, {})
         data[key] = {k: v for k, v in bucket.items() if v.get("ts", 0) >= cutoff}
+    # 對人的記憶留久一點：半年沒互動才忘掉。
+    people_cutoff = time.time() - 180 * 86400
+    people = data.get("people", {})
+    data["people"] = {
+        k: v for k, v in people.items() if v.get("last_seen", 0) >= people_cutoff
+    }

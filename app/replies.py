@@ -28,15 +28,45 @@ def _recent_replies_to(data: dict[str, Any], username: str) -> int:
     return count
 
 
+# 一次最多往下追幾則「有子回覆」的留言，避免 API 呼叫爆量。
+MAX_NESTED_PARENTS = 12
+
+
+def _collect_comments(client: Any, post_id: str) -> list[dict[str, Any]]:
+    """抓貼文底下的留言，包含「留言再底下的回覆」。
+
+    Threads 的 /replies 只保證回直接留言，所以有 has_replies 的再各抓一層。
+    """
+    top = client.replies(post_id)
+    seen = {str(c.get("id", "")) for c in top}
+    extra: list[dict[str, Any]] = []
+    for parent in [c for c in top if c.get("has_replies")][:MAX_NESTED_PARENTS]:
+        parent_id = str(parent.get("id", ""))
+        if not parent_id:
+            continue
+        try:
+            children = client.replies(parent_id)
+        except ThreadsError as exc:
+            log.warning("讀取留言 %s 的子回覆失敗：%s", parent_id, exc)
+            continue
+        for child in children:
+            child_id = str(child.get("id", ""))
+            if child_id and child_id not in seen:
+                seen.add(child_id)
+                extra.append(child)
+    return top + extra
+
+
 def _generate_reply(
     config: dict[str, Any],
     secrets: dict[str, Any],
     post_text: str,
     username: str,
     comment: str,
+    person: dict[str, Any] | None = None,
 ) -> tuple[str, str] | None:
     system = persona.system_prompt()
-    user = persona.reply_prompt(post_text, username, comment)
+    user = persona.reply_prompt(post_text, username, comment, person)
     raw, provider = router.generate(system, user, config, secrets)
     cleaned = textutil.clean(textutil.to_traditional(raw))
 
@@ -52,6 +82,25 @@ def _generate_reply(
         return None
 
     return cleaned, provider
+
+
+def _remember_person(
+    data: dict[str, Any], username: str, said: str, reply: str
+) -> None:
+    """更新「對這個人的記憶」：見過幾次、說過什麼、上次怎麼回。"""
+    now = time.time()
+    people = data.setdefault("people", {})
+    person = people.get(username)
+    if not isinstance(person, dict):
+        person = {"first_seen": now, "count": 0, "said": []}
+    person["count"] = int(person.get("count", 0)) + 1
+    person["last_seen"] = now
+    history = [str(x) for x in (person.get("said") or []) if x]
+    history.append(said[:80])
+    person["said"] = history[-6:]
+    person["last_reply"] = reply
+    person["last_reply_ts"] = now
+    people[username] = person
 
 
 def run_replies(
@@ -91,7 +140,7 @@ def run_replies(
             break
 
         try:
-            comments = client.replies(str(post["id"]))
+            comments = _collect_comments(client, str(post["id"]))
         except ThreadsError as exc:
             log.warning("讀取貼文 %s 的留言失敗：%s", post.get("id"), exc)
             if exc.code == 10:
@@ -141,7 +190,14 @@ def run_replies(
                 continue
 
             try:
-                generated = _generate_reply(config, secrets, str(post.get("text", "")), username, body)
+                generated = _generate_reply(
+                    config,
+                    secrets,
+                    str(post.get("text", "")),
+                    username,
+                    body,
+                    (data.get("people") or {}).get(username),
+                )
             except Exception as exc:  # noqa: BLE001
                 log.warning("生成回覆失敗（@%s）：%s", username, exc)
                 continue
@@ -180,6 +236,7 @@ def run_replies(
                     }
                     fresh["daily"]["replies"] = int(fresh["daily"].get("replies", 0)) + 1
                     fresh["last_reply_at"] = time.time()
+                    _remember_person(fresh, username, body, reply_text)
                 data = state.load()
                 log.info("已回覆 @%s：%s", username, reply_text)
 

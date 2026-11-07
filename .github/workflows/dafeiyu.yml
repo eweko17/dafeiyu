@@ -1,21 +1,21 @@
 name: 大肥魚排程
 
 # GitHub 的 cron 一律用 UTC，台灣是 UTC+8。
+# 每 30 分鐘跑一次 auto：時間到了就發文，順便回覆留言。
+# 選 :03 / :33 而不是 :00 / :30，避開 GitHub 整點的高負載（容易延遲或掉單）。
 on:
   schedule:
-    - cron: "30 1 * * *"      # 台灣 09:30 發文 1
-    - cron: "30 6 * * *"      # 台灣 14:30 發文 2
-    - cron: "30 13 * * *"     # 台灣 21:30 發文 3
-    - cron: "5,35 1-15 * * *" # 台灣 09:05–23:35 每 30 分鐘回覆留言
+    - cron: "3,33 0-15 * * *" # 台灣 08:03–23:33 每 30 分鐘
     - cron: "0 19 * * 6"      # 台灣週日 03:00 更新 token
   workflow_dispatch:
     inputs:
       task:
         description: "要執行的任務"
         required: true
-        default: doctor
+        default: auto
         type: choice
         options:
+          - auto
           - doctor
           - dry-run
           - post-1

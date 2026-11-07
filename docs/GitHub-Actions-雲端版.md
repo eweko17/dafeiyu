@@ -161,6 +161,7 @@
 | log 寫 `Gemini 回應 403 ... free tier is not available for this project` | 這把 Gemini key 的專案沒有免費額度 | 換一把新 key，或改設 `GROQ_API_KEY` |
 | 綠勾但 Threads 沒貼文 | 今天額度滿了／`posting.enabled=false` | 看 log 的「沒有發文：…」原因 |
 | 排程沒動 | workflow 被停用，或 repo 60 天沒活動 | Actions → Enable workflow |
+| log 寫 `API access blocked`（code 200） | Meta 要求驗證開發者帳號，不是 token 過期 | 開 <https://developers.facebook.com/> 完成驗證（reCAPTCHA＋簡訊），看到「Access restored」就會立刻恢復 |
 | `git push` 失敗 | 兩個排程撞在一起 | 再手動跑一次即可，程式有重試 |
 
 ---

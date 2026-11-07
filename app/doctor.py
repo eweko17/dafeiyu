@@ -73,7 +73,10 @@ def run() -> int:
             except ThreadsError as exc:
                 rows.append(_line(None, "今日額度", f"查不到：{exc}"))
         except Exception as exc:  # noqa: BLE001
-            rows.append(_line(False, "Threads 帳號", str(exc)))
+            detail = str(exc)
+            if "API access blocked" in detail:
+                detail += "（請到 developers.facebook.com 完成帳號驗證）"
+            rows.append(_line(False, "Threads 帳號", detail))
             critical = True
 
     primary = str(cfg.get("brain", {}).get("primary", "ollama")).strip()

@@ -54,6 +54,10 @@ def main() -> int:
             me = ThreadsClient(token, "me").me()
         except Exception as exc:  # noqa: BLE001
             print(f"Token 驗證失敗：{exc}")
+            if "API access blocked" in str(exc):
+                print("→ 這不是 token 過期，是 Meta 要求驗證開發者帳號。")
+                print("  請開 https://developers.facebook.com/ ，完成帳號驗證（reCAPTCHA＋簡訊），")
+                print("  看到「Access restored」後再跑一次即可。")
             _diagnose(raw, token)
             return 1
         user_id = str(me.get("id", "")).strip()

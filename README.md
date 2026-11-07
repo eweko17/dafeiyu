@@ -86,7 +86,7 @@ powershell -ExecutionPolicy Bypass -File .\scripts\install_tasks.ps1
 
 - 每天 09:30 / 14:30 / 21:30 各發一篇
 - 09:00–23:00 每 10 分鐘檢查一次留言並回覆
-- 每週日 03:00 自動更新 token
+- 每週日 03:00 自動更新 token（本機用的；雲端版要自己更新 GitHub Secrets）
 
 ---
 

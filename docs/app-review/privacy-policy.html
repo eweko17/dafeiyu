@@ -6,17 +6,18 @@
 <title>Privacy Policy — DaFeiYu Bot</title>
 <style>
   :root { color-scheme: light dark; }
-  body { max-width: 760px; margin: 40px auto; padding: 0 20px; font-family: system-ui, -apple-system, "Segoe UI", sans-serif; line-height: 1.7; }
+  body { max-width: 760px; margin: 40px auto; padding: 0 20px; font-family: system-ui, -apple-system, "Segoe UI", "Noto Sans TC", sans-serif; line-height: 1.7; }
   h1 { font-size: 1.8rem; margin-bottom: .2rem; }
   h2 { margin-top: 2rem; font-size: 1.2rem; }
   .meta { opacity: .7; font-size: .9rem; }
   code { background: rgba(127,127,127,.15); padding: 2px 5px; border-radius: 4px; }
   hr { margin: 3rem 0; opacity: .3; }
+  a { color: inherit; }
 </style>
 </head>
 <body>
 <h1>Privacy Policy — DaFeiYu Bot</h1>
-<p class="meta">Last updated: 2026-11-03</p>
+<p class="meta">Last updated: 2026-11-07</p>
 
 <p>DaFeiYu Bot (“the Bot”) is a personal, non-commercial project that posts and replies on Threads in the voice of a fictional character. This policy explains what data the Bot processes and how it is handled.</p>
 
@@ -25,7 +26,8 @@
   <li><strong>Threads account identifiers</strong>: your Threads user ID and username, obtained through Meta’s Threads API when you authorize the app.</li>
   <li><strong>Access token</strong>: a long-lived Threads access token used to publish posts and read replies on the authorized account.</li>
   <li><strong>Public content</strong>: the text of public Threads posts and replies that the Bot reads in order to respond. Only content that is already public is processed.</li>
-  <li><strong>Operational logs</strong>: timestamps, generated text, and error messages, stored locally for debugging.</li>
+  <li><strong>Interaction memory</strong>: your public username, the public text of your comment, and the Bot’s reply, so it can avoid repeating itself and remember the conversation.</li>
+  <li><strong>Operational logs</strong>: timestamps, generated text, and error messages, used for debugging.</li>
 </ul>
 <p>We do <strong>not</strong> collect passwords, private messages, email addresses, phone numbers, location data, or payment information.</p>
 
@@ -33,26 +35,33 @@
 <ul>
   <li>To publish posts on the authorized Threads account.</li>
   <li>To read and reply to replies on the Bot’s own posts.</li>
-  <li>To avoid duplicate replies and keep a short local memory of recent activity.</li>
+  <li>To avoid duplicate replies and keep a short memory of recent activity.</li>
   <li>To troubleshoot errors.</li>
 </ul>
 <p>We do <strong>not</strong> sell data, run advertising, build profiles, or share data with third parties for marketing.</p>
 
 <h2>3. Where data is stored</h2>
-<p>All data is stored on the operator’s personal computer, in a local folder. There is no server, no cloud database, and no analytics service.</p>
-<p>If the optional Gemini fallback is enabled, the text needed to generate a reply may be sent to Google’s Gemini API. In that case Google’s own terms and privacy policy apply. The fallback is off by default and can be disabled entirely.</p>
+<ul>
+  <li>The Bot runs on <strong>GitHub Actions</strong> (GitHub, Inc.). No server is maintained by the operator.</li>
+  <li>Post, reply and interaction records are stored in the project’s <strong>GitHub repository</strong> and, for the operator’s own chat memory, in a private unlisted <strong>GitHub Gist</strong>.</li>
+  <li>Text needed to generate a post or reply is sent to the AI provider in use: <strong>Groq</strong> (Groq, Inc.) by default, or <strong>Google Gemini</strong> if the operator enables that optional fallback. Those providers process the text under their own terms and privacy policies.</li>
+  <li>The operator’s personal computer may keep local copies for debugging.</li>
+  <li>No advertising, tracking, or analytics services are used.</li>
+</ul>
+<p>Because the project repository is public, records of public interactions (your public username, the public text you posted, and the Bot’s reply) may be visible there. No non-public information is stored.</p>
 
 <h2>4. Retention</h2>
 <ul>
-  <li>Access tokens are stored until revoked or replaced (typically refreshed every 60 days).</li>
-  <li>Post and reply records are kept locally for up to 60 days.</li>
-  <li>Logs are kept locally for up to 30 days.</li>
+  <li>Access tokens are kept until revoked or replaced.</li>
+  <li>Post and reply records: up to 60 days.</li>
+  <li>Per-person memory (username, recent public comments, last reply): up to 180 days.</li>
+  <li>Logs: up to 30 days.</li>
 </ul>
 
 <h2>5. Your choices</h2>
 <ul>
   <li>You can revoke the app’s access at any time: Threads → Settings → Website permissions → remove the app.</li>
-  <li>You can request deletion of any data associated with your account by contacting the operator at the address below.</li>
+  <li>You can request deletion of any data associated with your account by opening an issue on the project repository or by messaging the Bot’s account.</li>
   <li>You can ask the Bot to stop replying to you; the operator will add your account to a local skip list.</li>
 </ul>
 
@@ -66,21 +75,26 @@
 <p>This policy may be updated. The latest version will always be available at this URL.</p>
 
 <h2>9. Contact</h2>
-<p>Operator: ____________________<br>
-Email: ____________________<br>
-Threads: @____________________</p>
+<ul>
+  <li>Operator: DaFeiYu Bot (personal project)</li>
+  <li>Threads: <a href="https://www.threads.net/@da_fei_yu">@da_fei_yu</a></li>
+  <li>Contact: <a href="https://github.com/eweko17/dafeiyu/issues">github.com/eweko17/dafeiyu/issues</a></li>
+</ul>
 
 <hr>
 
 <h1>隱私政策（繁體中文）</h1>
-<p>大肥魚 Bot 是一個個人、非商業的專案，會以虛構角色的語氣在 Threads 上發文與回覆。</p>
+<p class="meta">最後更新：2026-11-07</p>
+
+<p>大肥魚 Bot 是一個個人、非商業的專案，會以虛構角色的語氣在 Threads 上發文與回覆。以下說明會處理哪些資料、以及怎麼處理。</p>
 
 <h2>收集的資料</h2>
 <ul>
-  <li>Threads 使用者 ID 與帳號名稱（透過 Meta Threads API 授權取得）</li>
-  <li>Threads access token（用來發文與讀取留言）</li>
-  <li>公開貼文與留言的文字（只處理本來就公開的內容）</li>
-  <li>本機執行紀錄（時間、生成文字、錯誤訊息）</li>
+  <li><strong>Threads 使用者 ID 與帳號名稱</strong>（透過 Meta Threads API 授權取得）</li>
+  <li><strong>Threads access token</strong>（用來發文與讀取留言）</li>
+  <li><strong>公開內容</strong>：公開貼文與留言的文字（只處理本來就公開的內容）</li>
+  <li><strong>互動記憶</strong>：你的公開帳號名稱、留言的公開文字、以及大肥魚的回覆，用來避免重複、記住對話</li>
+  <li><strong>執行紀錄</strong>：時間、生成的文字、錯誤訊息，用於除錯</li>
 </ul>
 <p>不收集密碼、私訊、email、電話、位置或付款資訊。</p>
 
@@ -91,32 +105,47 @@ Threads: @____________________</p>
   <li>避免重複回覆、保留短期記憶</li>
   <li>除錯</li>
 </ul>
-<p>不販售資料、不投放廣告、不建立个人画像、不為行銷目的分享給第三方。</p>
+<p>不販售資料、不投放廣告、不建立個人畫像、不為行銷目的分享給第三方。</p>
 
 <h2>儲存位置</h2>
-<p>所有資料存在操作者的個人電腦本機，沒有伺服器、沒有雲端資料庫、沒有分析服務。</p>
-<p>若啟用 Gemini 備援，生成回覆所需的文字可能會送到 Google Gemini API，適用 Google 的條款與隱私政策。備援預設關閉。</p>
+<ul>
+  <li>Bot 執行於 <strong>GitHub Actions</strong>（GitHub, Inc.），操作者沒有自架伺服器。</li>
+  <li>貼文、回覆與互動紀錄存在本專案的 <strong>GitHub repo</strong>；操作者自己的聊天記憶存在私密（未列出）的 <strong>GitHub Gist</strong>。</li>
+  <li>生成貼文或回覆所需的文字會送到目前使用的 AI 服務：預設是 <strong>Groq</strong>（Groq, Inc.），若操作者啟用備援則可能是 <strong>Google Gemini</strong>。這些服務依其自身條款與隱私政策處理文字。</li>
+  <li>操作者的個人電腦可能保留本機副本供除錯。</li>
+  <li>不使用任何廣告、追蹤或分析服務。</li>
+</ul>
+<p>由於本專案的 repo 是公開的，公開互動的紀錄（你的公開帳號名稱、你公開發表的文字、以及大肥魚的回覆）可能會被看見。不會儲存任何非公開資訊。</p>
 
 <h2>保存期限</h2>
 <ul>
-  <li>Token：保存到撤銷或更換為止（通常每 60 天更新）</li>
-  <li>貼文與回覆紀錄：本機最多 60 天</li>
-  <li>日誌：本機最多 30 天</li>
+  <li>Token：保存到撤銷或更換為止</li>
+  <li>貼文與回覆紀錄：最多 60 天</li>
+  <li>對個人的記憶（帳號、最近的公開留言、上次回覆）：最多 180 天</li>
+  <li>日誌：最多 30 天</li>
 </ul>
 
 <h2>你的選擇</h2>
 <ul>
   <li>隨時撤銷權限：Threads → 設定 → 網站權限 → 移除 App</li>
-  <li>要求刪除資料：聯絡下方信箱</li>
-  <li>要求不要再回覆你：操作者會把你的帳號加入本機跳過名單</li>
+  <li>要求刪除資料：到專案 repo 開 issue，或私訊大肥魚的帳號</li>
+  <li>要求不要再回覆你：操作者會把你的帳號加入跳過名單</li>
 </ul>
+
+<h2>兒童</h2>
+<p>本 Bot 並非針對 13 歲以下兒童設計，也不會刻意處理其資料。</p>
 
 <h2>AI 揭露</h2>
 <p>Bot 發出的內容會帶 Meta 的 <code>is_made_with_ai</code> 標記，並標示為 AI 生成。Bot 不會假裝自己是人類。</p>
 
+<h2>變更</h2>
+<p>本政策可能更新，最新版本永遠會放在這個網址。</p>
+
 <h2>聯絡方式</h2>
-<p>操作者：____________________<br>
-Email：____________________<br>
-Threads：@____________________</p>
+<ul>
+  <li>操作者：大肥魚 Bot（個人專案）</li>
+  <li>Threads：<a href="https://www.threads.net/@da_fei_yu">@da_fei_yu</a></li>
+  <li>聯絡表單：<a href="https://github.com/eweko17/dafeiyu/issues">github.com/eweko17/dafeiyu/issues</a></li>
+</ul>
 </body>
 </html>

@@ -28,9 +28,11 @@ Without this permission, the Bot can only see its own posts and cannot participa
 ## Data handling
 
 - Only public post text and username are processed.
-- Deduplication IDs are stored locally on the operator's computer for up to 60 days.
-- No server, no database, no analytics, no selling of data.
+- Deduplication IDs and reply records are stored in the project's public GitHub repository for up to 60 days; per-person memory is removed after 180 days.
+- Prompt text is sent to the AI provider in use (Groq, or optionally Google Gemini) only to generate the reply.
+- No advertising, analytics, or selling of data.
 - Users can request that the account stop replying to them, and can revoke access at any time.
+- Public interactions (username, public comment text, reply) may be visible in the public repository; no non-public data is stored.
 
 ## Rate limits
 

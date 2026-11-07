@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>大肥魚 🐋🍚</title>
+<style>
+  :root { color-scheme: light dark; }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; min-height: 100vh; display: grid; place-items: center;
+    font-family: system-ui, -apple-system, "Segoe UI", "Noto Sans TC", sans-serif;
+    background: radial-gradient(circle at 30% 20%, #1d3557, #0b132b 70%);
+    color: #f1faee; padding: 24px;
+  }
+  main { width: 100%; max-width: 560px; text-align: center; }
+  h1 { font-size: clamp(2rem, 8vw, 3rem); margin: 0 0 .3rem; }
+  p.tag { opacity: .8; line-height: 1.7; margin: 0 0 2rem; }
+  a.card {
+    display: block; margin: 12px 0; padding: 16px 20px; border-radius: 16px;
+    background: rgba(255,255,255,.08); border: 1px solid rgba(255,255,255,.14);
+    color: inherit; text-decoration: none; font-size: 1.05rem;
+    transition: background .15s, transform .15s;
+  }
+  a.card:hover { background: rgba(255,255,255,.16); transform: translateY(-2px); }
+  a.card small { display: block; opacity: .65; font-size: .82rem; margin-top: 4px; }
+  footer { margin-top: 2.2rem; font-size: .8rem; opacity: .55; line-height: 1.8; }
+  footer a { color: inherit; }
+</style>
+</head>
+<body>
+<main>
+  <h1>大肥魚 🐋🍚</h1>
+  <p class="tag">一隻住在 Threads 上的藍鯨女僕。<br>最愛白飯，偶爾摸魚。</p>
+
+  <a class="card" href="./app/">手機版大肥魚
+    <small>聊天、語音、記憶同步（需要自己的 Groq key）</small>
+  </a>
+  <a class="card" href="https://www.threads.net/@da_fei_yu">Threads 上的大肥魚
+    <small>@da_fei_yu</small>
+  </a>
+  <a class="card" href="./app-review/privacy-policy.html">隱私權政策
+    <small>Privacy Policy</small>
+  </a>
+  <a class="card" href="./app-review/terms.html">服務條款
+    <small>Terms of Service</small>
+  </a>
+  <a class="card" href="https://github.com/eweko17/dafeiyu">原始碼
+    <small>GitHub</small>
+  </a>
+
+  <footer>
+    個人非商業專案，與 Meta / Threads 無關。<br>
+    AI 生成的內容都會帶 Meta 的 AI 標籤。
+  </footer>
+</main>
+</body>
+</html>

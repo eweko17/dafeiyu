@@ -1,6 +1,6 @@
 # Privacy Policy — DaFeiYu Bot
 
-Last updated: 2026-11-03
+Last updated: 2026-11-07
 
 DaFeiYu Bot ("the Bot") is a personal, non-commercial project that posts and replies on Threads in the voice of a fictional character. This policy explains what data the Bot processes and how it is handled.
 
@@ -9,7 +9,8 @@ DaFeiYu Bot ("the Bot") is a personal, non-commercial project that posts and rep
 - **Threads account identifiers**: your Threads user ID and username, obtained through Meta's Threads API when you authorize the app.
 - **Access token**: a long-lived Threads access token used to publish posts and read replies on the authorized account.
 - **Public content**: the text of public Threads posts and replies that the Bot reads in order to respond. Only content that is already public is processed.
-- **Operational logs**: timestamps, generated text, and error messages, stored locally for debugging.
+- **Interaction memory**: your public username, the public text of your comment, and the Bot's reply, so it can avoid repeating itself and remember the conversation.
+- **Operational logs**: timestamps, generated text, and error messages, used for debugging.
 
 We do **not** collect passwords, private messages, email addresses, phone numbers, location data, or payment information.
 
@@ -17,27 +18,32 @@ We do **not** collect passwords, private messages, email addresses, phone number
 
 - To publish posts on the authorized Threads account.
 - To read and reply to replies on the Bot's own posts.
-- To avoid duplicate replies and keep a short local memory of recent activity.
+- To avoid duplicate replies and keep a short memory of recent activity.
 - To troubleshoot errors.
 
 We do **not** sell data, run advertising, build profiles, or share data with third parties for marketing.
 
 ## 3. Where data is stored
 
-All data is stored on the operator's personal computer, in a local folder. There is no server, no cloud database, and no analytics service.
+- The Bot runs on **GitHub Actions** (GitHub, Inc.). No server is maintained by the operator.
+- Post, reply and interaction records are stored in the project's **GitHub repository** and, for the operator's own chat memory, in a private unlisted **GitHub Gist**.
+- Text needed to generate a post or reply is sent to the AI provider in use: **Groq** (Groq, Inc.) by default, or **Google Gemini** if the operator enables that optional fallback. Those providers process the text under their own terms and privacy policies.
+- The operator's personal computer may keep local copies for debugging.
+- No advertising, tracking, or analytics services are used.
 
-If the optional Gemini fallback is enabled, the text needed to generate a reply may be sent to Google's Gemini API. In that case Google's own terms and privacy policy apply. The fallback is off by default and can be disabled entirely.
+Because the project repository is public, records of public interactions (your public username, the public text you posted, and the Bot's reply) may be visible there. No non-public information is stored.
 
 ## 4. Retention
 
-- Access tokens are stored until revoked or replaced (typically refreshed every 60 days).
-- Post and reply records are kept locally for up to 60 days.
-- Logs are kept locally for up to 30 days.
+- Access tokens are kept until revoked or replaced.
+- Post and reply records: up to 60 days.
+- Per-person memory (username, recent public comments, last reply): up to 180 days.
+- Logs: up to 30 days.
 
 ## 5. Your choices
 
 - You can revoke the app's access at any time: Threads → Settings → Website permissions → remove the app.
-- You can request deletion of any data associated with your account by contacting the operator at the address below.
+- You can request deletion of any data associated with your account by opening an issue on the project repository or by messaging the Bot's account.
 - You can ask the Bot to stop replying to you; the operator will add your account to a local skip list.
 
 ## 6. Children
@@ -50,26 +56,29 @@ Posts created by the Bot are published with Meta's `is_made_with_ai` flag and ar
 
 ## 8. Changes
 
-This policy may be updated. The latest version will always be available at the public URL where it is hosted.
+This policy may be updated. The latest version will always be available at this URL.
 
 ## 9. Contact
 
-Operator: ____________________
-Email: ____________________
-Threads: @____________________
+- Operator: DaFeiYu Bot (personal project)
+- Threads: [@da_fei_yu](https://www.threads.net/@da_fei_yu)
+- Contact form: <https://github.com/eweko17/dafeiyu/issues>
 
 ---
 
 # 隱私政策（繁體中文）
 
-大肥魚 Bot 是一個個人、非商業的專案，會以虛構角色的語氣在 Threads 上發文與回覆。
+最後更新：2026-11-07
+
+大肥魚 Bot 是一個個人、非商業的專案，會以虛構角色的語氣在 Threads 上發文與回覆。以下說明會處理哪些資料、以及怎麼處理。
 
 ## 收集的資料
 
-- Threads 使用者 ID 與帳號名稱（透過 Meta Threads API 授權取得）
-- Threads access token（用來發文與讀取留言）
-- 公開貼文與留言的文字（只處理本來就公開的內容）
-- 本機執行紀錄（時間、生成文字、錯誤訊息）
+- **Threads 使用者 ID 與帳號名稱**（透過 Meta Threads API 授權取得）
+- **Threads access token**（用來發文與讀取留言）
+- **公開內容**：公開貼文與留言的文字（只處理本來就公開的內容）
+- **互動記憶**：你的公開帳號名稱、留言的公開文字、以及大肥魚的回覆，用來避免重複、記住對話
+- **執行紀錄**：時間、生成的文字、錯誤訊息，用於除錯
 
 不收集密碼、私訊、email、電話、位置或付款資訊。
 
@@ -84,28 +93,41 @@ Threads: @____________________
 
 ## 儲存位置
 
-所有資料存在操作者的個人電腦本機，沒有伺服器、沒有雲端資料庫、沒有分析服務。
+- Bot 執行於 **GitHub Actions**（GitHub, Inc.），操作者沒有自架伺服器。
+- 貼文、回覆與互動紀錄存在本專案的 **GitHub repo**；操作者自己的聊天記憶存在私密（未列出）的 **GitHub Gist**。
+- 生成貼文或回覆所需的文字會送到目前使用的 AI 服務：預設是 **Groq**（Groq, Inc.），若操作者啟用備援則可能是 **Google Gemini**。這些服務依其自身條款與隱私政策處理文字。
+- 操作者的個人電腦可能保留本機副本供除錯。
+- 不使用任何廣告、追蹤或分析服務。
 
-若啟用 Gemini 備援，生成回覆所需的文字可能會送到 Google Gemini API，適用 Google 的條款與隱私政策。備援預設關閉。
+由於本專案的 repo 是公開的，公開互動的紀錄（你的公開帳號名稱、你公開發表的文字、以及大肥魚的回覆）可能會被看見。不會儲存任何非公開資訊。
 
 ## 保存期限
 
-- Token：保存到撤銷或更換為止（通常每 60 天更新）
-- 貼文與回覆紀錄：本機最多 60 天
-- 日誌：本機最多 30 天
+- Token：保存到撤銷或更換為止
+- 貼文與回覆紀錄：最多 60 天
+- 對個人的記憶（帳號、最近的公開留言、上次回覆）：最多 180 天
+- 日誌：最多 30 天
 
 ## 你的選擇
 
 - 隨時撤銷權限：Threads → 設定 → 網站權限 → 移除 App
-- 要求刪除資料：聯絡下方信箱
-- 要求不要再回覆你：操作者會把你的帳號加入本機跳過名單
+- 要求刪除資料：到專案 repo 開 issue，或私訊大肥魚的帳號
+- 要求不要再回覆你：操作者會把你的帳號加入跳過名單
+
+## 兒童
+
+本 Bot 並非針對 13 歲以下兒童設計，也不會刻意處理其資料。
 
 ## AI 揭露
 
 Bot 發出的內容會帶 Meta 的 `is_made_with_ai` 標記，並標示為 AI 生成。Bot 不會假裝自己是人類。
 
+## 變更
+
+本政策可能更新，最新版本永遠會放在這個網址。
+
 ## 聯絡方式
 
-操作者：____________________
-Email：____________________
-Threads：@____________________
+- 操作者：大肥魚 Bot（個人專案）
+- Threads：[@da_fei_yu](https://www.threads.net/@da_fei_yu)
+- 聯絡表單：<https://github.com/eweko17/dafeiyu/issues>

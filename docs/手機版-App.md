@@ -168,7 +168,7 @@ APK 只是一層殼，打開後載入的是
 | 項目 | 費用 |
 |---|---|
 | GitHub Pages（網站） | 0 元 |
-| GitHub Releases / repo 放 APK | 0 元 |
+| OneDrive（自己存放 APK） | 0 元 |
 | Groq 免費層 | 0 元 |
 | **總計** | **0 元** |
 

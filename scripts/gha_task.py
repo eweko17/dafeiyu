@@ -19,7 +19,6 @@ ROOT = Path(__file__).resolve().parent.parent
 # 台灣時間 = UTC+8；:04/:14/:24… 是刻意避開整點與半點，GitHub 在整點最容易延遲或掉單。
 SCHEDULE_TASKS: dict[str, list[str]] = {
     "4,14,24,34,44,54 0-15 * * *": ["auto"],
-    "0 19 * * 6": ["refresh-token"],
 }
 
 # 手動觸發（workflow_dispatch）→ 指令
@@ -29,7 +28,6 @@ MANUAL_TASKS: dict[str, list[str]] = {
     "post-2": ["post", "--slot", "2"],
     "post-3": ["post", "--slot", "3"],
     "replies": ["replies"],
-    "refresh": ["refresh-token"],
     "doctor": ["doctor"],
     "dry-run": ["post", "--dry-run"],
 }

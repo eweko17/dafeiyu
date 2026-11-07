@@ -11,9 +11,10 @@
 ## 申請前要準備
 
 1. App 已經是 **Live** 狀態（Meta 後台右上角切換）。
-2. 有一個**公開的隱私政策網址**（不能是 Google Docs，要是網頁）。
-   - 最簡單：把 `privacy-policy.html` 上傳到 GitHub Pages（免費）。
-   - 或任何你可以公開貼上的網址。
+2. 有**公開的隱私權政策與服務條款網址**（不能是 Google Docs，要是網頁）。
+   - 已經放在 GitHub Pages：
+     - 隱私權政策：<https://eweko17.github.io/dafeiyu/app-review/privacy-policy.html>
+     - 服務條款：<https://eweko17.github.io/dafeiyu/app-review/terms.html>
 3. 一段 **2–3 分鐘的螢幕錄影**，照 `screencast-script.md` 拍。
 4. 確認 App 的「資料刪除」說明可以運作（測試者可以要求刪除資料）。
 

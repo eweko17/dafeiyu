@@ -6,7 +6,6 @@ name: 大肥魚排程
 on:
   schedule:
     - cron: "4,14,24,34,44,54 0-15 * * *" # 台灣 08:04–23:54 每 10 分鐘
-    - cron: "0 19 * * 6"      # 台灣週日 03:00 更新 token
   workflow_dispatch:
     inputs:
       task:
@@ -22,7 +21,6 @@ on:
           - post-2
           - post-3
           - replies
-          - refresh
 
 permissions:
   contents: write

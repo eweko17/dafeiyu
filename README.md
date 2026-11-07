@@ -179,7 +179,8 @@ powershell -ExecutionPolicy Bypass -File .\scripts\resume_tasks.ps1   # 恢復
 - 公開 repo 的 Actions **完全免費、不限分鐘**
 - token 放在 GitHub Secrets，不會出現在程式碼裡
 - 排程每 10 分鐘跑一次 `auto`（台灣 08:04–23:54，刻意避開整點）：時間到了就發文，順便回覆留言
-- 缺點：GitHub 的排程會延遲 3–15 分鐘；repo 會多出一些「紀錄：…」的 commit
+- 缺點：GitHub 自己的排程會延遲 3–15 分鐘，偶爾還會整個不掉單；要穩就再掛一層免費外部定時器（見 `docs/外部排程-cron-job.org.md`）
+- repo 會多出一些「紀錄：…」的 commit
 
 完整步驟在 `docs/GitHub-Actions-雲端版.md`。
 

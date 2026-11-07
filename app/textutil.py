@@ -70,6 +70,8 @@ def clean(text: str) -> str:
     )
     t = re.sub(r"[ \t]+\n", "\n", t)
     t = re.sub(r"\n{3,}", "\n\n", t)
+    # 括號動作統一用全形，看起來比較一致：「(甩尾巴)」→「（甩尾巴）」
+    t = re.sub(r"\(([^\x00-\x7f]{1,12})\)", r"（\1）", t)
     return t.strip()
 
 

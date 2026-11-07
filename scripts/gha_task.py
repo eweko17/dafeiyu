@@ -16,9 +16,9 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 
 # 排程（UTC）→ 指令
-# 台灣時間 = UTC+8；:03/:33 是刻意避開整點與半點，GitHub 在整點最容易延遲或掉單。
+# 台灣時間 = UTC+8；:04/:14/:24… 是刻意避開整點與半點，GitHub 在整點最容易延遲或掉單。
 SCHEDULE_TASKS: dict[str, list[str]] = {
-    "3,33 0-15 * * *": ["auto"],
+    "4,14,24,34,44,54 0-15 * * *": ["auto"],
     "0 19 * * 6": ["refresh-token"],
 }
 

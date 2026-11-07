@@ -132,9 +132,9 @@ def generate(
     max_tokens = int(cfg.get("max_output_tokens", 800))
     last_reason = ""
 
-    # 推理型模型有時會把 token 全花在「思考」，content 就變空的。
-    # 遇到這種情況把上限放大再試一次。
-    for _ in range(2):
+    # 推理型模型有時會把 token 全花在「思考」，content 就變空的或講到一半。
+    # 遇到沒講完就加大上限重試。
+    for _ in range(3):
         data = _post(model, messages, cfg, api_key, max_tokens)
         choices = data.get("choices") or []
         if not choices:
@@ -143,18 +143,22 @@ def generate(
         choice = choices[0]
         message = choice.get("message") or {}
         text = (message.get("content") or "").strip()
-        if text:
+        finish = str(choice.get("finish_reason", "未知"))
+
+        if text and finish != "length":
             return text
 
-        finish = str(choice.get("finish_reason", "未知"))
         thinking = (message.get("reasoning") or "").strip()
         last_reason = f"finish_reason={finish}"
         if thinking:
             last_reason += f"，思考了 {len(thinking)} 字"
 
         if finish == "length" and max_tokens < _MAX_TOKENS_CAP:
+            # 已經有內容但被截斷，也算失敗，放大後重寫一次。
             max_tokens = min(max_tokens * 3, _MAX_TOKENS_CAP)
             continue
+        if text:
+            return text
         break
 
     raise BrainError(f"Groq 回傳空白內容（{last_reason}）")

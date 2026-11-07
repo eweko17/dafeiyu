@@ -1,4 +1,4 @@
-﻿# 建立 Windows 工作排程：一天 3 篇 + 每 30 分鐘回覆 + 每週更新 token
+﻿# 建立 Windows 工作排程：一天 3 篇 + 每 10 分鐘回覆 + 每週更新 token
 # 使用方式：powershell -ExecutionPolicy Bypass -File .\scripts\install_tasks.ps1
 
 $ErrorActionPreference = 'Stop'
@@ -47,16 +47,16 @@ $replyTrigger = New-ScheduledTaskTrigger -Daily -At '09:00'
 $replyTrigger.Repetition = (New-ScheduledTaskTrigger `
     -Once `
     -At '09:00' `
-    -RepetitionInterval (New-TimeSpan -Minutes 30) `
+    -RepetitionInterval (New-TimeSpan -Minutes 10) `
     -RepetitionDuration (New-TimeSpan -Hours 14)).Repetition
 Register-ScheduledTask `
     -TaskName $replyName `
     -Action $replyAction `
     -Trigger $replyTrigger `
     -Settings $settings `
-    -Description "DaFeiYu reply poller (09:00-23:00 every 30 min)" `
+    -Description "DaFeiYu reply poller (09:00-23:00 every 10 min)" `
     -Force | Out-Null
-Write-Host "已建立：$replyName（09:00-23:00，每 30 分鐘）"
+Write-Host "已建立：$replyName（09:00-23:00，每 10 分鐘）"
 
 $refreshName = 'DaFeiYu-RefreshToken'
 $refreshAction = New-ScheduledTaskAction `

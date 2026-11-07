@@ -85,7 +85,7 @@ powershell -ExecutionPolicy Bypass -File .\scripts\install_tasks.ps1
 ```
 
 - 每天 09:30 / 14:30 / 21:30 各發一篇
-- 09:00–23:00 每 30 分鐘檢查一次留言並回覆
+- 09:00–23:00 每 10 分鐘檢查一次留言並回覆
 - 每週日 03:00 自動更新 token
 
 ---
@@ -178,7 +178,7 @@ powershell -ExecutionPolicy Bypass -File .\scripts\resume_tasks.ps1   # 恢復
 
 - 公開 repo 的 Actions **完全免費、不限分鐘**
 - token 放在 GitHub Secrets，不會出現在程式碼裡
-- 排程每 30 分鐘跑一次 `auto`（台灣 08:03–23:33，刻意避開整點）：時間到了就發文，順便回覆留言
+- 排程每 10 分鐘跑一次 `auto`（台灣 08:04–23:54，刻意避開整點）：時間到了就發文，順便回覆留言
 - 缺點：GitHub 的排程會延遲 3–15 分鐘；repo 會多出一些「紀錄：…」的 commit
 
 完整步驟在 `docs/GitHub-Actions-雲端版.md`。

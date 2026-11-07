@@ -57,6 +57,14 @@ def _collect_comments(client: Any, post_id: str) -> list[dict[str, Any]]:
     return top + extra
 
 
+def _looks_unfinished(text: str) -> bool:
+    """模型偶爾會講到一半就斷掉，這種回覆發出去很奇怪。"""
+    t = text.strip()
+    if not t:
+        return True
+    return t.endswith(("，", ",", "、", "…", "（", "(", "：", ":"))
+
+
 def _generate_reply(
     config: dict[str, Any],
     secrets: dict[str, Any],
@@ -67,21 +75,35 @@ def _generate_reply(
 ) -> tuple[str, str] | None:
     system = persona.system_prompt()
     user = persona.reply_prompt(post_text, username, comment, person)
-    raw, provider = router.generate(system, user, config, secrets)
-    cleaned = textutil.clean(textutil.to_traditional(raw))
-
-    if cleaned.strip().upper() == "SKIP" or cleaned.startswith("SKIP"):
-        return None
-
-    cleaned = textutil.fit(cleaned, int(config.get("replies", {}).get("max_chars", 80)))
-    if not cleaned:
-        return None
-
+    max_chars = int(config.get("replies", {}).get("max_chars", 80))
     blocked = config.get("safety", {}).get("blocked_keywords", [])
-    if textutil.contains_blocked(cleaned, blocked):
-        return None
 
-    return cleaned, provider
+    for attempt in range(2):
+        raw, provider = router.generate(system, user, config, secrets)
+        cleaned = textutil.clean(textutil.to_traditional(raw))
+
+        if cleaned.strip().upper() == "SKIP" or cleaned.startswith("SKIP"):
+            return None
+
+        cleaned = textutil.fit(cleaned, max_chars)
+        if not cleaned:
+            return None
+
+        # 講到一半就斷掉就再產一次；第二次還是一樣才勉強收尾。
+        if attempt == 0 and _looks_unfinished(cleaned):
+            log.info("回覆被截斷（%s），重新產生一次", cleaned[-6:])
+            continue
+
+        cleaned = cleaned.rstrip("，,、…：: ")
+        if cleaned and cleaned[-1] not in "。！？!?）)」":
+            cleaned += "。"
+
+        if textutil.contains_blocked(cleaned, blocked):
+            return None
+
+        return cleaned, provider
+
+    return None
 
 
 def _remember_person(

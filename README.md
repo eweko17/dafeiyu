@@ -20,10 +20,11 @@
 | 自己發文 | ✅ 現在就能用 | 免 Meta App Review |
 | 回覆自己貼文底下的留言 | ✅ 現在就能用 | 免 App Review；留言串裡的下層回覆也會回 |
 | 記住來留言的人 | ✅ 現在就能用 | 記得見過幾次、說過什麼、上次回什麼 |
-| 主動回覆陌生人的公開貼文 | ⏳ 需審核 | 需要 `threads_keyword_search`，Meta 規定未通過前只能搜到自己的貼文 |
+| 主動回覆陌生人的公開貼文 | ⏳ 需審核 | 需要 `threads_keyword_search`；程式已寫好（`discover`），通過後把 `discover.enabled` 改 `true` 就會自動跑 |
 | 桌寵 | ✅ 現在就能用 | 獨立版，不需 DSH / Node |
 
 「主動回覆陌生人」的申請資料與步驟放在 `docs/app-review/申請-主動回覆陌生人.md`。這是免費但需要等待的流程，通過與否由 Meta 決定。
+程式已經寫好了（`discover` 指令），通過後把 `config.json` 的 `discover.enabled` 改成 `true` 就會自動跑；用法與參數見 `docs/主動回覆陌生人.md`。
 
 ---
 
@@ -121,6 +122,8 @@ powershell -ExecutionPolicy Bypass -File .\scripts\install_tasks.ps1
 .\大肥魚.bat post                # 發一篇
 .\大肥魚.bat replies --dry-run   # 預覽回覆
 .\大肥魚.bat replies             # 回覆新留言
+.\大肥魚.bat discover --dry-run  # 預覽「主動回別人貼文」（需 Meta 審核）
+.\大肥魚.bat discover            # 主動回覆公開貼文（需 Meta 審核）
 .\大肥魚.bat test-brain          # 測試模型
 .\大肥魚.bat quota               # 查今日 API 額度
 .\大肥魚.bat refresh-token       # 手動更新 token

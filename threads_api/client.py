@@ -135,6 +135,34 @@ class ThreadsClient:
 
         raise last_error or ThreadsError("發佈失敗，原因不明")
 
+    # ------------------------------------------------------------------ 搜尋
+    def search_posts(
+        self,
+        query: str,
+        *,
+        search_type: str = "RECENT",
+        limit: int = 25,
+        since: int | None = None,
+    ) -> list[dict[str, Any]]:
+        """搜尋公開貼文。
+
+        需要 `threads_keyword_search` 進階權限（Meta App Review）。
+        還沒通過時，這個端點會回 400 / code 10，或只搜到自己的貼文。
+        """
+        params: dict[str, Any] = {
+            "q": query,
+            "search_type": search_type,
+            "limit": max(1, min(int(limit), 100)),
+            "fields": (
+                "id,text,username,permalink,timestamp,"
+                "media_type,has_replies,is_reply,is_quote_post"
+            ),
+        }
+        if since:
+            params["since"] = int(since)
+        body = self._call("GET", "keyword_search", **params)
+        return list(body.get("data") or [])
+
     # ------------------------------------------------------------------ 留言
     def replies(self, media_id: str, limit: int = 50) -> list[dict[str, Any]]:
         body = self._call(

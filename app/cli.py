@@ -13,6 +13,7 @@ from threads_api import make_client
 from . import config as config_mod
 from . import logging_setup, persona, state
 from .console import setup_console
+from . import discover as discover_mod
 from . import post as post_mod
 from . import replies as replies_mod
 from .doctor import run as doctor_run
@@ -147,12 +148,37 @@ def cmd_auto(_: argparse.Namespace) -> int:
 
     count = replies_mod.run_replies(cfg, secrets)
     print(f"本輪回覆 {count} 則")
+
+    if discover_mod.enabled(cfg):
+        try:
+            found = discover_mod.run_discover(cfg, secrets)
+            print(f"本輪主動回覆 {found} 則")
+        except discover_mod.DiscoverUnavailable as exc:
+            print(f"主動回覆先跳過：\n{exc}")
     return rc
+
+
+def cmd_discover(args: argparse.Namespace) -> int:
+    cfg, secrets = _load()
+    try:
+        found = discover_mod.run_discover(
+            cfg,
+            secrets,
+            dry_run=args.dry_run,
+            limit=args.limit,
+            keyword=args.keyword,
+        )
+    except discover_mod.DiscoverUnavailable as exc:
+        print(f"\n{exc}\n")
+        return 2
+    print(f"本輪主動回覆 {found} 則")
+    return 0
 
 
 def cmd_status(_: argparse.Namespace) -> int:
     data = state.load()
     print(f"今天：發文 {data['daily'].get('posts', 0)} 篇，回覆 {data['daily'].get('replies', 0)} 則")
+    print(f"今天主動回覆：{data['daily'].get('discover', 0)} 則")
     print(f"歷史貼文：{len(data.get('posts', []))} 篇")
     print(f"回覆紀錄：{len(data.get('replied', {}))} 則")
     print(f"認識的人：{len(data.get('people', {}))} 位")
@@ -202,6 +228,13 @@ def build_parser() -> argparse.ArgumentParser:
     p_reply.add_argument("--dry-run", action="store_true")
     p_reply.add_argument("--limit", type=int, default=None)
 
+    p_disc = sub.add_parser(
+        "discover", help="搜尋公開貼文並主動回覆（需 threads_keyword_search）"
+    )
+    p_disc.add_argument("--dry-run", action="store_true")
+    p_disc.add_argument("--limit", type=int, default=None)
+    p_disc.add_argument("--keyword", default=None, help="只搜這個關鍵字")
+
     p_brain = sub.add_parser("test-brain", help="測試本機／雲端模型")
     p_brain.add_argument("--prompt", default=None)
 
@@ -227,6 +260,8 @@ def main(argv: list[str] | None = None) -> int:
             return cmd_post(args)
         if args.command == "replies":
             return cmd_replies(args)
+        if args.command == "discover":
+            return cmd_discover(args)
         if args.command == "test-brain":
             return cmd_test_brain(args)
         if args.command == "quota":

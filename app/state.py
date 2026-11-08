@@ -19,9 +19,10 @@ DEFAULT_STATE: dict[str, Any] = {
     "replied": {},
     "skipped": {},
     "people": {},
-    "daily": {"date": None, "posts": 0, "replies": 0},
+    "daily": {"date": None, "posts": 0, "replies": 0, "discover": 0},
     "last_post_at": None,
     "last_reply_at": None,
+    "last_discover_at": None,
 }
 
 

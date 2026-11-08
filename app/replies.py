@@ -62,27 +62,32 @@ def _looks_unfinished(text: str) -> bool:
     t = text.strip()
     if not t:
         return True
+    if t.count("（") != t.count("）") or t.count("(") != t.count(")"):
+        return True
     return t.endswith(("，", ",", "、", "…", "（", "(", "：", ":"))
 
 
-def _generate_reply(
+def generate_reply_text(
     config: dict[str, Any],
     secrets: dict[str, Any],
-    post_text: str,
-    username: str,
-    comment: str,
-    person: dict[str, Any] | None = None,
+    user_prompt: str,
+    *,
+    max_chars: int,
 ) -> tuple[str, str] | None:
+    """把 prompt 丟給模型，回傳（整理過的文字, provider）；不想回就回 None。"""
     system = persona.system_prompt()
-    user = persona.reply_prompt(post_text, username, comment, person)
-    max_chars = int(config.get("replies", {}).get("max_chars", 80))
     blocked = config.get("safety", {}).get("blocked_keywords", [])
 
     for attempt in range(2):
-        raw, provider = router.generate(system, user, config, secrets)
+        raw, provider = router.generate(system, user_prompt, config, secrets)
         cleaned = textutil.clean(textutil.to_traditional(raw))
 
-        if cleaned.strip().upper() == "SKIP" or cleaned.startswith("SKIP"):
+        head = cleaned.strip()
+        if re.match(r"^skip", head, re.IGNORECASE):
+            return None
+        # 模型偶爾會先亂寫一段、最後才補上 SKIP；只要出現就當作不想回。
+        if re.search(r"(?:^|\s)skip\b", cleaned, re.IGNORECASE):
+            log.info("模型輸出含 SKIP，跳過")
             return None
 
         cleaned = textutil.fit(cleaned, max_chars)
@@ -106,7 +111,20 @@ def _generate_reply(
     return None
 
 
-def _remember_person(
+def _generate_reply(
+    config: dict[str, Any],
+    secrets: dict[str, Any],
+    post_text: str,
+    username: str,
+    comment: str,
+    person: dict[str, Any] | None = None,
+) -> tuple[str, str] | None:
+    user = persona.reply_prompt(post_text, username, comment, person)
+    max_chars = int(config.get("replies", {}).get("max_chars", 80))
+    return generate_reply_text(config, secrets, user, max_chars=max_chars)
+
+
+def remember_person(
     data: dict[str, Any], username: str, said: str, reply: str
 ) -> None:
     """更新「對這個人的記憶」：見過幾次、說過什麼、上次怎麼回。"""
@@ -263,7 +281,7 @@ def run_replies(
                     }
                     fresh["daily"]["replies"] = int(fresh["daily"].get("replies", 0)) + 1
                     fresh["last_reply_at"] = time.time()
-                    _remember_person(fresh, username, body, reply_text)
+                    remember_person(fresh, username, body, reply_text)
                 data = state.load()
                 log.info("已回覆 @%s：%s", username, reply_text)
 

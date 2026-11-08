@@ -21,6 +21,8 @@ on:
           - post-2
           - post-3
           - replies
+          - discover
+          - discover-dry
 
 permissions:
   contents: write

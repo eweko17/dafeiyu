@@ -104,6 +104,9 @@
 | 08:04–23:54，每 10 分鐘 | 跑一次 `auto`：時間到了就發文，順便檢查並回覆留言 |
 | 09:30 / 14:30 / 21:30 前後 | 各發一篇（延遲最多 40 分鐘內都會補發） |
 
+> **主動回覆陌生人**（`discover`）預設是關的。要等 Meta 審核通過 `threads_keyword_search`，
+> 再把 `config.json` 的 `discover.enabled` 改成 `true`。做法見 `docs/主動回覆陌生人.md`。
+
 > **Token 不會自動續期。** 雲端沒有辦法把新的 token 寫回 GitHub Secrets，
 > 所以 60 天到期前要自己重新產生一次，再更新 `THREADS_TOKEN`。
 > 本機的每週日自動續期只會更新電腦上的 `state/secrets.json`，不會動到雲端。

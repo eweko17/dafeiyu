@@ -52,6 +52,30 @@
     "min_interval_seconds": 4,
     "max_chars": 80
   },
+  "discover": {
+    "enabled": false,
+    "keywords": [
+      "白飯",
+      "摸魚",
+      "上班好累",
+      "工程師",
+      "桌面寵物",
+      "AI 工具"
+    ],
+    "search_type": "RECENT",
+    "max_per_day": 3,
+    "max_per_run": 1,
+    "limit": 25,
+    "min_age_minutes": 10,
+    "max_age_hours": 12,
+    "min_chars": 12,
+    "reply_max_chars": 50,
+    "same_user_cooldown_days": 7,
+    "min_interval_seconds": 45,
+    "require_cjk": true,
+    "allow_replies": false,
+    "skip_quote_posts": true
+  },
   "safety": {
     "disclose_ai": true,
     "blocked_keywords": [

@@ -28,6 +28,8 @@ MANUAL_TASKS: dict[str, list[str]] = {
     "post-2": ["post", "--slot", "2"],
     "post-3": ["post", "--slot", "3"],
     "replies": ["replies"],
+    "discover": ["discover"],
+    "discover-dry": ["discover", "--dry-run"],
     "doctor": ["doctor"],
     "dry-run": ["post", "--dry-run"],
 }

@@ -70,12 +70,17 @@ Accept: application/vnd.github+json
 Content-Type: application/json
 ```
 
-4. 按 **Test run**
+4. 按 **TEST RUN → START TEST RUN**
    - 看到 **HTTP 204** = 成功（GitHub 成功觸發時就是回 204，沒有內容）
-   - 看到 **401** = 鑰匙貼錯或過期
+   - 看到 **401** = 兩種可能：
+     - `Bad credentials` → 鑰匙貼錯或過期
+     - `the endpoint requires authentication` → **header 根本沒加上去**（Name/Value 打完要按＋加進列表）
    - 看到 **403** = 這把鑰匙沒有 Actions: write
    - 看到 **404** = repo 名稱或 workflow 檔名打錯
+   - 看到 **malformed job** = 某個欄位格式不對（最常見是複製到反引號、全形引號，或 JSON 少括號）
 5. 回 <https://github.com/eweko17/dafeiyu/actions> 看有沒有出現一筆 `workflow_dispatch` 的執行
+6. **按 CREATE / SAVE 存檔** —— TEST RUN 只測一次，不會自動建立週期性排程。
+   存好後確認 job 列表上是 **Enabled**、排程是 **Every 10 minutes**。
 
 ---
 

@@ -9,7 +9,7 @@
 - 平台：Windows 10/11，Python 3.10+
 - 手機：PWA（加到主畫面）或 APK，聊天／語音／記憶，見 `docs/手機版-App.md`（網址 <https://eweko17.github.io/dafeiyu/app/>）
 - 記憶同步：手機 ↔ 電腦共用同一份記憶（私密 GitHub Gist）
-- 雲端：也可以放 GitHub Actions，電腦手機都不用開，見 `docs/GitHub-Actions-雲端版.md`
+- 雲端：也可以放 GitHub Actions，電腦手機都不用開，見 `docs/GitHub-Actions-雲端版.md`（**建議搭配** `docs/外部排程-cron-job.org.md`，GitHub 內建排程實測很不穩）
 
 ---
 

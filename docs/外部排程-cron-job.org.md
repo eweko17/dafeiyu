@@ -1,9 +1,10 @@
 # 外部排程（cron-job.org）— 讓「每 10 分鐘」真的會跑
 
-GitHub 自己的 `schedule` 常常延遲，甚至直接不掉單。這個 repo 的紀錄就看得出來：
-cron 寫的是每 30 分鐘，實際上有時候隔了好幾個小時才跑一次。
+GitHub 自己的 `schedule` 非常不穩。這個 repo 的實際紀錄：
+11/04 到 11/07 只跑了 **7 次**（cron 寫的是每 10 分鐘），
+11/07 更是一整天 **0 次**，結果當天一篇貼文都沒發。
 
-如果你要「留言 10 分鐘內一定被回到」，就讓外面的免費服務每 10 分鐘叫 GitHub 跑一次。
+所以要「一天 3 篇、留言 10 分鐘內被回到」，就讓外面的免費服務每 10 分鐘叫 GitHub 跑一次。
 電腦不用開著，也不用付錢。
 
 > 這個做法只是「叫 GitHub 起來做事」，真正執行的還是 GitHub Actions。
@@ -109,13 +110,24 @@ Content-Type: application/json
 
 ---
 
-## 六、順便讓 token 自動續期（選用）
+## 六、設定完要確認的事
 
-Threads 的長效 token 是 60 天。原本靠 GitHub 每週日的排程續期，但那個排程一樣不一定會跑。
+1. cron-job.org 的 job 狀態是 **Enabled**。
+2. 隔 20 分鐘去 <https://github.com/eweko17/dafeiyu/actions> 看，應該每 10 分鐘都有一筆
+   `workflow_dispatch` 的執行（不再只有零星的 `schedule`）。
+3. job 的 **Save responses in job history** 有開，失敗時才看得到 401／403。
+4. cron-job.org 可以設「失敗時寄 email 通知」，建議打開。
 
-可以再建一個 cron-job.org job：
+> **這把 PAT 只放在 cron-job.org，不要貼進 repo。**
+> 如果外流：GitHub → Settings → Developer settings → 撤銷那把 token，再建一把新的貼回 cron-job.org。
+> PAT 到期（90 天）後 cron-job.org 會開始收到 401，那時再建新的一把就好。
 
-- 排程：`0 19 * * 6`（台灣時間週日 03:00）
-- URL、method、headers 都跟上面一樣
-- Request body 改成：`{"ref":"main","inputs":{"task":"refresh"}}`
+---
+
+## 七、Token 還是要手動更新
+
+Threads 的長效 token 是 60 天，**雲端沒有辦法自動續期**（GitHub Actions 不能把新 token 寫回 Secrets）。
+到期前重新產生一次，再跑 `上傳Token.bat` 更新 `THREADS_TOKEN`。大約 **2027-01-05** 到期。
+
+本機的每週日自動續期只會更新電腦上的 `state/secrets.json`，不會動到雲端。
 

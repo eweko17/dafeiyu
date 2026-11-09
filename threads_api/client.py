@@ -105,6 +105,25 @@ class ThreadsClient:
             payload["reply_to_id"] = reply_to_id
         return str(self._call("POST", f"{self.user_id}/threads", **payload)["id"])
 
+    def create_image(
+        self,
+        image_url: str,
+        text: str,
+        alt_text: str | None = None,
+        reply_to_id: str | None = None,
+    ) -> str:
+        payload: dict[str, Any] = {
+            "media_type": "IMAGE",
+            "image_url": image_url,
+            "text": text,
+            "is_made_with_ai": "true" if self.is_made_with_ai else "false",
+        }
+        if alt_text:
+            payload["alt_text"] = alt_text
+        if reply_to_id:
+            payload["reply_to_id"] = reply_to_id
+        return str(self._call("POST", f"{self.user_id}/threads", **payload)["id"])
+
     def publish(self, creation_id: str) -> str:
         return str(
             self._call(
@@ -116,6 +135,21 @@ class ThreadsClient:
 
     def post_text(self, text: str, reply_to_id: str | None = None) -> str:
         creation_id = self.create_text(text, reply_to_id=reply_to_id)
+        return self._publish_with_retries(creation_id)
+
+    def post_image(
+        self,
+        text: str,
+        image_url: str,
+        alt_text: str | None = None,
+        reply_to_id: str | None = None,
+    ) -> str:
+        creation_id = self.create_image(
+            image_url, text, alt_text=alt_text, reply_to_id=reply_to_id
+        )
+        return self._publish_with_retries(creation_id)
+
+    def _publish_with_retries(self, creation_id: str) -> str:
         last_error: ThreadsError | None = None
 
         for attempt in range(self.publish_retries):

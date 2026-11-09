@@ -44,6 +44,17 @@
     "max_retries": 2,
     "topic_cooldown_posts": 6
   },
+  "images": {
+    "enabled": true,
+    "width": 1080,
+    "height": 1350,
+    "model": "flux",
+    "style": "2d illustration, cute, soft pastel colors, clean simple background, chibi anime girl with long blue hair, wearing a dark blue and white maid dress with a whale apron, no text, no letters",
+    "max_attempts": 3,
+    "fetch_timeout_seconds": 120,
+    "min_bytes": 15000,
+    "alt_prefix": "大肥魚插圖："
+  },
   "replies": {
     "enabled": true,
     "poll_days": 7,

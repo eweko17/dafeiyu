@@ -11,6 +11,7 @@ from brain import router
 from threads_api import ThreadsError, make_client
 
 from . import persona, state, textutil
+from . import images as images_mod
 
 log = logging.getLogger("dafeiyu.post")
 
@@ -151,6 +152,9 @@ def create_post(
         return {"skipped": True, "reason": problem}
 
     if dry_run:
+        image = images_mod.prepare(config, secrets, text, topic, mood)
+        if image:
+            print(f"[插圖] {image['url']}\n[畫面] {image['scene']}\n[alt] {image['alt']}")
         log.info("（dry-run）以下是要發的內容：\n%s", text)
         return {
             "dry_run": True,
@@ -158,35 +162,57 @@ def create_post(
             "provider": provider,
             "mood": mood,
             "topic": topic,
+            "image": image,
         }
+
+    image = images_mod.prepare(config, secrets, text, topic, mood)
 
     try:
         client = make_client(config, secrets)
-        media_id = client.post_text(text)
+        if image:
+            try:
+                media_id = client.post_image(
+                    text, str(image["url"]), alt_text=str(image["alt"])
+                )
+            except ThreadsError as exc:
+                log.warning("圖片貼文失敗（%s），改成純文字重發", exc)
+                media_id = client.post_text(text)
+                image = None
+        else:
+            media_id = client.post_text(text)
     except ThreadsError as exc:
         log.error("發文失敗：%s", exc)
         return {"skipped": True, "reason": f"threads_error: {exc}"}
 
     with state.transaction() as fresh:
-        fresh["posts"].append(
-            {
-                "id": media_id,
-                "text": text,
-                "topic": topic,
-                "mood": mood,
-                "provider": provider,
-                "ts": time.time(),
-                "iso": now.isoformat(),
-            }
-        )
+        record: dict[str, Any] = {
+            "id": media_id,
+            "text": text,
+            "topic": topic,
+            "mood": mood,
+            "provider": provider,
+            "ts": time.time(),
+            "iso": now.isoformat(),
+        }
+        if image:
+            record["image_url"] = image["url"]
+            record["image_scene"] = image["scene"]
+        fresh["posts"].append(record)
         fresh["daily"]["posts"] = int(fresh["daily"].get("posts", 0)) + 1
         fresh["last_post_at"] = time.time()
 
-    log.info("已發文：%s（%s, %s）", media_id, provider, topic)
+    log.info(
+        "已發文：%s（%s, %s%s）",
+        media_id,
+        provider,
+        topic,
+        "，有圖" if image else "，純文字",
+    )
     return {
         "id": media_id,
         "text": text,
         "provider": provider,
         "mood": mood,
         "topic": topic,
+        "image": image,
     }

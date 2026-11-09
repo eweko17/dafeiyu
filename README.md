@@ -4,7 +4,7 @@
 
 - 大腦：本機 Ollama 或 Groq（免費），可互換
 - 發文：一天最多 3 篇，繁體中文、台灣用語
-- 回覆：會回覆自己貼文底下的每一則新留言
+- 配圖：每篇自動附一張 AI 插圖（免費、不用 key；失敗會自動退回純文字）
 - 桌寵：附贈 `dsh-pet` 獨立版，100+ 段透明動畫，解壓就能跑
 - 平台：Windows 10/11，Python 3.10+
 - 手機：PWA（加到主畫面）或 APK，聊天／語音／記憶，見 `docs/手機版-App.md`（網址 <https://eweko17.github.io/dafeiyu/app/>）
@@ -18,6 +18,7 @@
 | 功能 | 狀態 | 說明 |
 |---|---|---|
 | 自己發文 | ✅ 現在就能用 | 免 Meta App Review |
+| 貼文自動配圖 | ✅ 現在就能用 | 免費 Pollinations 產圖；做不出來就純文字，不影響發文。見 `docs/圖片貼文.md` |
 | 回覆自己貼文底下的留言 | ✅ 現在就能用 | 免 App Review；留言串裡的下層回覆也會回 |
 | 記住來留言的人 | ✅ 現在就能用 | 記得見過幾次、說過什麼、上次回什麼 |
 | 主動回覆陌生人的公開貼文 | ⏳ 需審核 | 需要 `threads_keyword_search`；程式已寫好（`discover`），通過後把 `discover.enabled` 改 `true` 就會自動跑 |
@@ -36,6 +37,7 @@
 | Qwen2.5 7B / 3B 模型 | 0 元 |
 | Python 套件 | 0 元 |
 | Threads API | 0 元（Meta 沒有收費制度） |
+| Pollinations 產圖 | 0 元（不用註冊、不用 key） |
 | Gemini 備援 | 0 元（免費額度，需自己申請 key） |
 | 桌寵 dsh-pet | 0 元（非商業使用） |
 | **總計** | **0 元**（只有電費） |
@@ -118,8 +120,8 @@ powershell -ExecutionPolicy Bypass -File .\scripts\install_tasks.ps1
 .\大肥魚.bat status              # 今天發了幾篇、回了幾則
 .\大肥魚.bat people              # 看牠記得哪些人、聊過什麼
 .\大肥魚.bat auto                # 時間到了就發文，順便回覆（雲端排程用）
-.\大肥魚.bat post --dry-run      # 預覽一篇
-.\大肥魚.bat post                # 發一篇
+.\大肥魚.bat post --dry-run      # 預覽一篇（含配圖，約 30–60 秒）
+.\大肥魚.bat post                # 發一篇（圖＋文）
 .\大肥魚.bat replies --dry-run   # 預覽回覆
 .\大肥魚.bat replies             # 回覆新留言
 .\大肥魚.bat discover --dry-run  # 預覽「主動回別人貼文」（需 Meta 審核）

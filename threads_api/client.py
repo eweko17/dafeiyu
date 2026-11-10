@@ -124,6 +124,54 @@ class ThreadsClient:
             payload["reply_to_id"] = reply_to_id
         return str(self._call("POST", f"{self.user_id}/threads", **payload)["id"])
 
+    def create_carousel_item(
+        self,
+        image_url: str,
+        alt_text: str | None = None,
+    ) -> str:
+        """建立輪播的單張圖片容器（還不是一篇貼文）。"""
+        payload: dict[str, Any] = {
+            "media_type": "IMAGE",
+            "image_url": image_url,
+            "is_carousel_item": "true",
+        }
+        if alt_text:
+            payload["alt_text"] = alt_text
+        return str(self._call("POST", f"{self.user_id}/threads", **payload)["id"])
+
+    def create_carousel(
+        self,
+        children: list[str],
+        text: str,
+        reply_to_id: str | None = None,
+    ) -> str:
+        payload: dict[str, Any] = {
+            "media_type": "CAROUSEL",
+            "children": ",".join(children),
+            "text": text,
+            "is_made_with_ai": "true" if self.is_made_with_ai else "false",
+        }
+        if reply_to_id:
+            payload["reply_to_id"] = reply_to_id
+        return str(self._call("POST", f"{self.user_id}/threads", **payload)["id"])
+
+    def container_status(self, creation_id: str) -> dict[str, Any]:
+        return self._call("GET", creation_id, fields="status,error_message")
+
+    def _wait_until_finished(self, creation_id: str, timeout: int = 90) -> None:
+        """等容器變成 FINISHED；輪播的家長容器要等子項準備好才能建立。"""
+        deadline = time.time() + timeout
+        while time.time() < deadline:
+            body = self.container_status(creation_id)
+            status = str(body.get("status") or "").upper()
+            if status == "FINISHED":
+                return
+            if status in ("ERROR", "EXPIRED"):
+                message = body.get("error_message") or f"容器狀態 {status}"
+                raise ThreadsError(f"圖片容器失敗：{message}")
+            time.sleep(3)
+        raise ThreadsError("圖片容器等太久還沒準備好")
+
     def publish(self, creation_id: str) -> str:
         return str(
             self._call(
@@ -148,6 +196,30 @@ class ThreadsClient:
             image_url, text, alt_text=alt_text, reply_to_id=reply_to_id
         )
         return self._publish_with_retries(creation_id)
+
+    def post_carousel(
+        self,
+        text: str,
+        image_urls: list[str],
+        alt_texts: list[str] | None = None,
+        reply_to_id: str | None = None,
+    ) -> str:
+        """2～20 張圖的輪播貼文（Threads 的 CAROUSEL）。"""
+        urls = [str(url).strip() for url in image_urls if str(url).strip()]
+        if len(urls) < 2:
+            raise ThreadsError("輪播至少需要兩張圖片")
+        alts = list(alt_texts or [])
+
+        children: list[str] = []
+        for index, url in enumerate(urls):
+            alt = alts[index] if index < len(alts) else None
+            child_id = self.create_carousel_item(url, alt_text=alt)
+            self._wait_until_finished(child_id)
+            children.append(child_id)
+
+        parent_id = self.create_carousel(children, text, reply_to_id=reply_to_id)
+        self._wait_until_finished(parent_id)
+        return self._publish_with_retries(parent_id)
 
     def _publish_with_retries(self, creation_id: str) -> str:
         last_error: ThreadsError | None = None

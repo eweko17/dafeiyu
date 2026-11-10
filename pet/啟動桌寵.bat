@@ -9,18 +9,27 @@ for /r "%~dp0" %%f in (dsh-pet.exe) do (
 )
 
 if not defined EXE (
-  echo 找不到 dsh-pet.exe。
-  echo 請確認 pet\dsh-pet-win-x64 已經解壓縮。
+  echo Cannot find dsh-pet.exe.
+  echo Please make sure pet\dsh-pet-win-x64 is extracted.
   echo.
   pause
   exit /b 1
 )
 
-rem 順便啟動記憶同步（每 60 秒跟手機對一次）；沒設定同步會自動略過
-if exist "%~dp0..\同步記憶.bat" (
-  start "大肥魚記憶同步" /min "%~dp0..\同步記憶.bat" --watch
+tasklist /FI "IMAGENAME eq dsh-pet.exe" 2>nul | find /I "dsh-pet.exe" >nul
+if not errorlevel 1 (
+  echo Desktop pet is already running.
+  echo If you cannot see it, close it first, then start again.
+  timeout /t 3 >nul
+  exit /b 0
 )
 
-echo 正在啟動桌寵：%EXE%
+echo Starting desktop pet...
 start "" "%EXE%"
+
+rem Start memory sync in the background. Optional: skipped if the file is absent.
+if exist "%~dp0..\sync-memory.bat" (
+  start "Dafeiyu Sync" /min "%~dp0..\sync-memory.bat" --watch
+)
+
 exit /b 0

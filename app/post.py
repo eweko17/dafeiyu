@@ -152,9 +152,13 @@ def create_post(
         return {"skipped": True, "reason": problem}
 
     if dry_run:
-        image = images_mod.prepare(config, secrets, text, topic, mood)
-        if image:
-            print(f"[插圖] {image['url']}\n[畫面] {image['scene']}\n[alt] {image['alt']}")
+        images = images_mod.prepare(config, secrets, text, topic, mood)
+        for image in images:
+            print(
+                f"[表情包] {image['url']}\n"
+                f"[說明] {image.get('desc', '')}\n"
+                f"[alt] {image['alt']}"
+            )
         log.info("（dry-run）以下是要發的內容：\n%s", text)
         return {
             "dry_run": True,
@@ -162,22 +166,31 @@ def create_post(
             "provider": provider,
             "mood": mood,
             "topic": topic,
-            "image": image,
+            "images": images,
         }
 
-    image = images_mod.prepare(config, secrets, text, topic, mood)
+    images = images_mod.prepare(config, secrets, text, topic, mood)
 
     try:
         client = make_client(config, secrets)
-        if image:
+        if images:
             try:
-                media_id = client.post_image(
-                    text, str(image["url"]), alt_text=str(image["alt"])
-                )
+                if len(images) >= 2:
+                    media_id = client.post_carousel(
+                        text,
+                        [str(image["url"]) for image in images],
+                        [str(image["alt"]) for image in images],
+                    )
+                else:
+                    media_id = client.post_image(
+                        text,
+                        str(images[0]["url"]),
+                        alt_text=str(images[0]["alt"]),
+                    )
             except ThreadsError as exc:
                 log.warning("圖片貼文失敗（%s），改成純文字重發", exc)
                 media_id = client.post_text(text)
-                image = None
+                images = []
         else:
             media_id = client.post_text(text)
     except ThreadsError as exc:
@@ -194,9 +207,12 @@ def create_post(
             "ts": time.time(),
             "iso": now.isoformat(),
         }
-        if image:
-            record["image_url"] = image["url"]
-            record["image_scene"] = image["scene"]
+        if images:
+            record["image_urls"] = [image["url"] for image in images]
+            record["image_memes"] = [image["meme"] for image in images]
+            # 保留舊欄位（單張時仍可直接看第一張）
+            record["image_url"] = images[0]["url"]
+            record["image_scene"] = images[0].get("desc", "")
         fresh["posts"].append(record)
         fresh["daily"]["posts"] = int(fresh["daily"].get("posts", 0)) + 1
         fresh["last_post_at"] = time.time()
@@ -206,7 +222,7 @@ def create_post(
         media_id,
         provider,
         topic,
-        "，有圖" if image else "，純文字",
+        f"，有圖 x{len(images)}" if images else "，純文字",
     )
     return {
         "id": media_id,
@@ -214,5 +230,5 @@ def create_post(
         "provider": provider,
         "mood": mood,
         "topic": topic,
-        "image": image,
+        "images": images,
     }

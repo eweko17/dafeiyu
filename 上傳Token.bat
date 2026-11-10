@@ -3,7 +3,7 @@ chcp 65001 >nul
 set PYTHONUTF8=1
 cd /d "%~dp0"
 echo ============================================================
-echo  大肥魚：把 60 天 token 自動上傳到 GitHub Secrets
+echo  Dafeiyu: upload a 60-day token to GitHub Secrets
 echo ============================================================
 echo.
 if exist ".venv\Scripts\python.exe" (

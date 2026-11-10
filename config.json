@@ -46,14 +46,18 @@
   },
   "images": {
     "enabled": true,
+    "mode": "memes",
+    "max_per_post": 2,
+    "base_url": "https://eweko17.github.io/dafeiyu/memes/",
+    "manifest": "docs/memes/memes.json",
+    "alt_prefix": "大肥魚表情包：",
     "width": 1080,
     "height": 1350,
     "model": "flux",
     "style": "2d illustration, cute, soft pastel colors, clean simple background, chibi anime girl with long blue hair, wearing a dark blue and white maid dress with a whale apron, no text, no letters",
     "max_attempts": 3,
     "fetch_timeout_seconds": 120,
-    "min_bytes": 15000,
-    "alt_prefix": "大肥魚插圖："
+    "min_bytes": 15000
   },
   "replies": {
     "enabled": true,

@@ -28,7 +28,7 @@ We do **not** sell data, run advertising, build profiles, or share data with thi
 - The Bot runs on **GitHub Actions** (GitHub, Inc.). No server is maintained by the operator.
 - Post, reply and interaction records are stored in the project's **GitHub repository** and, for the operator's own chat memory, in a private unlisted **GitHub Gist**.
 - Text needed to generate a post or reply is sent to the AI provider in use: **Groq** (Groq, Inc.) by default, or **Google Gemini** if the operator enables that optional fallback. Those providers process the text under their own terms and privacy policies.
-- A short English description of the desired illustration (no personal data) is sent to **Pollinations** (<https://image.pollinations.ai>), a free image-generation service, to create an illustration for a post. Pollinations returns a public image URL that is attached to the post and may keep generated images on its own servers under its terms and privacy policy.
+- Post images are **built-in static sticker images** that ship with the open-source project and are served from its public GitHub Pages site. No personal data, prompts, or descriptions are sent to any image-generation service.
 - The operator's personal computer may keep local copies for debugging.
 - No advertising, tracking, or analytics services are used.
 
@@ -97,7 +97,7 @@ This policy may be updated. The latest version will always be available at this 
 - Bot 執行於 **GitHub Actions**（GitHub, Inc.），操作者沒有自架伺服器。
 - 貼文、回覆與互動紀錄存在本專案的 **GitHub repo**；操作者自己的聊天記憶存在私密（未列出）的 **GitHub Gist**。
 - 生成貼文或回覆所需的文字會送到目前使用的 AI 服務：預設是 **Groq**（Groq, Inc.），若操作者啟用備援則可能是 **Google Gemini**。這些服務依其自身條款與隱私政策處理文字。
-- 貼文附圖會把一句英文畫面描述（不含個人資料）送到 **Pollinations**（<https://image.pollinations.ai>）這個免費產圖服務，取得公開圖片網址後附在貼文上。Pollinations 可能依其條款與隱私政策在其伺服器保留生成的圖片。
+- 貼文附圖是專案內建的**靜態表情包**，透過專案的公開 GitHub Pages 提供。不會把任何個人資料、提示詞或描述送到產圖服務。
 - 操作者的個人電腦可能保留本機副本供除錯。
 - 不使用任何廣告、追蹤或分析服務。
 
@@ -122,7 +122,7 @@ This policy may be updated. The latest version will always be available at this 
 
 ## AI 揭露
 
-Bot 發出的內容會帶 Meta 的 `is_made_with_ai` 標記，並標示為 AI 生成；貼文附圖也是由 AI 產圖服務生成。Bot 不會假裝自己是人類。
+Bot 發出的內容會帶 Meta 的 `is_made_with_ai` 標記，並標示為 AI 生成；貼文附圖是專案內建的固定表情包圖片。Bot 不會假裝自己是人類。
 
 ## 變更
 

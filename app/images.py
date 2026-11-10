@@ -1,18 +1,21 @@
-"""貼文配圖：用免費的 Pollinations 產生插圖，交給 Threads 發佈。
+"""貼文配圖：使用「大肥魚表情包」的現成圖片（不再每次 AI 產圖）。
 
 流程：
-  貼文文字 → 請模型寫一句英文畫面描述 → 組成 Pollinations 網址
-  → 自己先抓一次（確認產得出來，也順便讓它快取）→ 把網址交給 Threads
+  貼文文字 → 從 docs/memes/memes.json 的表情包清單挑 1～2 張
+  → 用 GitHub Pages 的公開網址交給 Threads（單張用 IMAGE、兩張用 CAROUSEL）
 
-不用 API key、不用付費。任何一步失敗就回 None，貼文照常以純文字發出。
+圖片是專案內建的靜態檔案，行為穩定、不用等產圖，也没有第三方產圖服務。
+舊的 Pollinations AI 產圖保留成備用模式（config 的 images.mode = "pollinations"）。
 """
 
 from __future__ import annotations
 
+import json
 import logging
 import random
 import re
 import urllib.parse
+from pathlib import Path
 from typing import Any
 
 import requests
@@ -20,8 +23,127 @@ import requests
 from brain import router
 
 from . import persona, textutil
+from .paths import ROOT
 
 log = logging.getLogger("dafeiyu.images")
+
+DEFAULT_MANIFEST = "docs/memes/memes.json"
+DEFAULT_BASE_URL = "https://eweko17.github.io/dafeiyu/memes/"
+DEFAULT_ALT_PREFIX = "大肥魚表情包："
+
+_MANIFEST_CACHE: dict[str, list[dict[str, Any]]] = {}
+
+# --------------------------------------------------------------------------
+# 表情包（預設模式）
+# --------------------------------------------------------------------------
+
+
+def enabled(config: dict[str, Any]) -> bool:
+    return bool((config.get("images") or {}).get("enabled", False))
+
+
+def _manifest_path(config: dict[str, Any]) -> Path:
+    raw = str((config.get("images") or {}).get("manifest") or DEFAULT_MANIFEST)
+    path = Path(raw)
+    return path if path.is_absolute() else ROOT / path
+
+
+def _load_manifest(config: dict[str, Any]) -> list[dict[str, Any]]:
+    """讀表情包清單；檔案不存在或格式壞掉就回空清單（貼文改純文字）。"""
+    cfg = config.get("images") or {}
+    path = _manifest_path(config)
+    key = str(path)
+    if key in _MANIFEST_CACHE:
+        return _MANIFEST_CACHE[key]
+
+    try:
+        data = json.loads(path.read_text(encoding="utf-8"))
+    except Exception as exc:  # noqa: BLE001
+        log.warning("讀不到表情包清單（%s）：%s", path, exc)
+        _MANIFEST_CACHE[key] = []
+        return []
+
+    base = str(cfg.get("base_url") or data.get("base_url") or DEFAULT_BASE_URL).rstrip("/")
+    items: list[dict[str, Any]] = []
+    for raw_item in data.get("items") or []:
+        if not isinstance(raw_item, dict):
+            continue
+        filename = str(raw_item.get("file") or "").strip()
+        if not filename:
+            continue
+        if not (path.parent / filename).is_file():
+            log.warning("表情包檔案不存在，略過：%s", path.parent / filename)
+            continue
+        items.append(
+            {
+                "id": str(raw_item.get("id") or Path(filename).stem),
+                "desc": str(raw_item.get("desc") or "").strip(),
+                "tags": [str(t) for t in (raw_item.get("tags") or []) if str(t)],
+                "url": f"{base}/{urllib.parse.quote(filename)}",
+            }
+        )
+
+    if not items:
+        log.warning("表情包清單是空的：%s", path)
+    _MANIFEST_CACHE[key] = items
+    return items
+
+
+def _score(item: dict[str, Any], haystack: str) -> int:
+    return sum(1 for tag in item.get("tags", []) if tag and tag in haystack)
+
+
+def _select_memes(
+    config: dict[str, Any],
+    post_text: str,
+    topic: str,
+    mood: str,
+) -> list[dict[str, Any]]:
+    cfg = config.get("images") or {}
+    max_per_post = int(cfg.get("max_per_post", 2))
+    max_per_post = max(0, min(2, max_per_post))
+    if max_per_post == 0:
+        return []
+
+    items = _load_manifest(config)
+    if not items:
+        return []
+
+    haystack = "\n".join([post_text or "", topic or "", mood or ""])
+    hits = [(item, _score(item, haystack)) for item in items]
+    hits = [(item, score) for item, score in hits if score > 0]
+
+    if hits:
+        # 分數高的優先；同分隨機，避免每次都同一張
+        hits.sort(key=lambda pair: (-pair[1], random.random()))
+        chosen = [item for item, _ in hits[:max_per_post]]
+    else:
+        # 完全沒有關鍵字命中時，只放一張，避免兩張都文不對題
+        chosen = [random.choice(items)]
+
+    alt_prefix = str(cfg.get("alt_prefix") or DEFAULT_ALT_PREFIX)
+    result: list[dict[str, Any]] = []
+    for item in chosen:
+        alt = f"{alt_prefix}{item['desc']}".strip()
+        result.append(
+            {
+                "url": item["url"],
+                "alt": alt[:900],
+                "meme": item["id"],
+                "desc": item["desc"],
+            }
+        )
+
+    log.info(
+        "配圖：%s",
+        "、".join(str(image["meme"]) for image in result) or "（無）",
+    )
+    return result
+
+
+# --------------------------------------------------------------------------
+# 舊的 Pollinations AI 產圖（備用模式）
+# --------------------------------------------------------------------------
 
 DEFAULT_STYLE = (
     "2d illustration, cute, soft pastel colors, clean simple background, "
@@ -40,10 +162,6 @@ FALLBACK_SCENES = [
     ("週末|連假|睡|賴床", "blue-haired chibi maid sleeping in a messy bed, morning sunlight"),
 ]
 GENERIC_SCENE = "blue-haired chibi maid doing everyday things in a cozy room"
-
-
-def enabled(config: dict[str, Any]) -> bool:
-    return bool((config.get("images") or {}).get("enabled", False))
 
 
 def _clean_scene(raw: str) -> str:
@@ -114,7 +232,7 @@ def build_url(scene: str, config: dict[str, Any], seed: int) -> str:
     )
 
 
-def prepare(
+def _prepare_pollinations(
     config: dict[str, Any],
     secrets: dict[str, Any],
     post_text: str,
@@ -122,9 +240,6 @@ def prepare(
     mood: str,
 ) -> dict[str, Any] | None:
     """回傳 {"url", "alt", "scene"}；做不出來就回 None（改成純文字發）。"""
-    if not enabled(config):
-        return None
-
     cfg = config.get("images") or {}
     attempts = max(1, int(cfg.get("max_attempts", 3)))
     timeout = float(cfg.get("fetch_timeout_seconds", 120))
@@ -171,3 +286,28 @@ def prepare(
 
     log.warning("產圖失敗，這篇改成純文字發")
     return None
+
+
+# --------------------------------------------------------------------------
+# 對外入口
+# --------------------------------------------------------------------------
+
+
+def prepare(
+    config: dict[str, Any],
+    secrets: dict[str, Any],
+    post_text: str,
+    topic: str,
+    mood: str,
+) -> list[dict[str, Any]]:
+    """回傳 0～2 張圖片的清單（空清單 = 純文字發）。"""
+    if not enabled(config):
+        return []
+
+    cfg = config.get("images") or {}
+    mode = str(cfg.get("mode") or "memes").strip().lower()
+    if mode == "pollinations":
+        image = _prepare_pollinations(config, secrets, post_text, topic, mood)
+        return [image] if image else []
+
+    return _select_memes(config, post_text, topic, mood)

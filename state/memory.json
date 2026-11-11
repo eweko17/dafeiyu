@@ -223,6 +223,13 @@
       "text": "是啦，那隻藍髮獸耳超會推薦白飯的。（甩尾巴）",
       "provider": "groq",
       "ts": 1794382849.1538823
+    },
+    "17912135166561526": {
+      "reply_id": "17988451173093117",
+      "username": "haiki_yuuki",
+      "text": "哎呀，被抓到吃空餉啦？本鯨也只能偷吃點 Token 耶。（翻白眼）",
+      "provider": "groq",
+      "ts": 1794385845.9820726
     }
   },
   "skipped": {},
@@ -296,15 +303,25 @@
       "last_seen": 1794382849.1538866,
       "last_reply": "是啦，那隻藍髮獸耳超會推薦白飯的。（甩尾巴）",
       "last_reply_ts": 1794382849.1538866
+    },
+    "haiki_yuuki": {
+      "first_seen": 1794385845.982077,
+      "count": 1,
+      "said": [
+        "吃空餉😡"
+      ],
+      "last_seen": 1794385845.982077,
+      "last_reply": "哎呀，被抓到吃空餉啦？本鯨也只能偷吃點 Token 耶。（翻白眼）",
+      "last_reply_ts": 1794385845.982077
     }
   },
   "daily": {
     "date": "2026-11-11",
     "posts": 2,
-    "replies": 4,
+    "replies": 5,
     "discover": 0
   },
   "last_post_at": 1794378059.1686552,
-  "last_reply_at": 1794382849.1538854,
+  "last_reply_at": 1794385845.9820757,
   "last_discover_at": null
 }

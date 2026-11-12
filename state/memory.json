@@ -227,6 +227,25 @@
       ],
       "image_url": "https://eweko17.github.io/dafeiyu/memes/eating-rice.png",
       "image_scene": "躺平扒白飯，擺爛捱罵也無所謂，適合被吐槽、偷懶、吃白飯自嘲"
+    },
+    {
+      "id": "18122054393057406",
+      "text": "剛刷到一篇 AI 新聞，標題說『AI 要學會做白飯』我瞬間笑到嘴角抽筋。結果點開後，文字像雲霧一樣繞來繞去，我只抓到「token」兩個字，腦袋直接白屏。（皺眉）想說這到底是未來的飯菜還是新型的病毒？白飯呢？只能先把碗裡的熱飯塞進肚子，讓腸胃先給個答案。算了，等我把這篇「高深」吃完再回來繼續假裝懂。（本鯨記下了）#本鯨日常",
+      "topic": "AI 新聞看得似懂非懂",
+      "mood": "莫名有點 emo",
+      "provider": "groq",
+      "ts": 1794489645.9796667,
+      "iso": "2026-11-12T21:20:29.800787+08:00",
+      "image_urls": [
+        "https://eweko17.github.io/dafeiyu/memes/big-burner.png",
+        "https://eweko17.github.io/dafeiyu/memes/bowl-full.png"
+      ],
+      "image_memes": [
+        "big-burner",
+        "bowl-full"
+      ],
+      "image_url": "https://eweko17.github.io/dafeiyu/memes/big-burner.png",
+      "image_scene": "死魚眼加思考氣泡吐槽「已思考用時13秒 大燒貨」，適合嫌 AI 想得慢、燒 token、毒舌"
     }
   ],
   "replied": {
@@ -440,11 +459,11 @@
   },
   "daily": {
     "date": "2026-11-12",
-    "posts": 2,
+    "posts": 3,
     "replies": 0,
     "discover": 0
   },
-  "last_post_at": 1794464453.3556554,
+  "last_post_at": 1794489645.9796815,
   "last_reply_at": 1794417639.523314,
   "last_discover_at": null
 }

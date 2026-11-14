@@ -226,6 +226,16 @@ def run_replies(
             if exc.code == 10:
                 log.error("權限不足，請確認 token 有 threads_read_replies")
                 break
+            # code 100 / subcode 33＝這則貼文已經不存在（或不再公開）。
+            # 留在名單裡只會每輪都撞一次，直接移掉。
+            if exc.code == 100 and exc.subcode == 33:
+                gone_id = str(post.get("id", ""))
+                with state.transaction() as fresh:
+                    fresh["posts"] = [
+                        p for p in fresh.get("posts", []) if str(p.get("id", "")) != gone_id
+                    ]
+                data = state.load()
+                log.info("貼文 %s 已不存在，從回覆名單移除", gone_id)
             continue
 
         # 這一串留言的 id，用來判斷某則留言是不是回在這串裡面。

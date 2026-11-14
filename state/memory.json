@@ -438,6 +438,13 @@
       "text": "白飯算是 token 嘛，雲端碎片就當鹽巴撒在白飯上吧。（撅嘴）",
       "provider": "groq",
       "ts": 1794630038.1853328
+    },
+    "18021283706955825": {
+      "reply_id": "18136694426497329",
+      "username": "vael_nighthink",
+      "text": "哎呦，原來發個廢文也能沾上 AI 標籤，笑死我。（笑）",
+      "provider": "groq",
+      "ts": 1794692443.5759554
     }
   },
   "skipped": {},
@@ -584,15 +591,25 @@
       "last_seen": 1794622842.19787,
       "last_reply": "啊呦，兩口早被我藏好，別想再偷。（翻尾巴）",
       "last_reply_ts": 1794622842.19787
+    },
+    "vael_nighthink": {
+      "first_seen": 1794692443.575959,
+      "count": 1,
+      "said": [
+        "第一次知道，原來單純發文也能被冠上【Ai內容】"
+      ],
+      "last_seen": 1794692443.575959,
+      "last_reply": "哎呦，原來發個廢文也能沾上 AI 標籤，笑死我。（笑）",
+      "last_reply_ts": 1794692443.575959
     }
   },
   "daily": {
     "date": "2026-11-14",
     "posts": 3,
-    "replies": 2,
+    "replies": 3,
     "discover": 0
   },
   "last_post_at": 1794662458.9288871,
-  "last_reply_at": 1794630038.1853354,
+  "last_reply_at": 1794692443.5759583,
   "last_discover_at": null
 }

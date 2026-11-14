@@ -91,6 +91,24 @@ powershell -ExecutionPolicy Bypass -File .\scripts\install_tasks.ps1
 - 09:00–23:00 每 10 分鐘檢查一次留言並回覆
 - 每週日 03:00 自動更新 token（本機用的；雲端版要自己更新 GitHub Secrets）
 
+### 6. 留言要聊多久
+
+她會把整棵留言樹抓下來（貼文 → 留言 → 她的回覆 → 對方再回 → …），
+最多往下追 10 層，所以**對方一直回，她就一直回**，不會聊到第二輪就停。
+
+`config.json` → `replies`：
+
+| 欄位 | 預設 | 意思 |
+|---|---|---|
+| `max_per_run` | 12 | 每 10 分鐘最多回幾則 |
+| `max_per_day` | 100 | 一天最多回幾則（Threads API 上限是 250 則／24 小時） |
+| `max_per_person_per_day` | 0 | 同一個人一天最多回幾則；**0 = 不限** |
+| `min_interval_seconds` | 4 | 每則之間隔幾秒，避免送太快 |
+| `poll_days` | 7 | 只回頭看最近 7 天的貼文 |
+
+想壓低聲量就把 `max_per_person_per_day` 設成 3；想完全放生某個人，
+把他的帳號加進 `config.json` → `safety.blocked_usernames`（例如 `["someone_123"]`）。
+
 ---
 
 ## 資料夾結構

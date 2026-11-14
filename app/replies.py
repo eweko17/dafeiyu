@@ -28,22 +28,42 @@ def _recent_replies_to(data: dict[str, Any], username: str) -> int:
     return count
 
 
-# 一次最多往下追幾則「有子回覆」的留言，避免 API 呼叫爆量。
-MAX_NESTED_PARENTS = 12
+# 留言樹最多往下追幾層（貼文 → 留言 → 回覆 → 回覆的回覆…）。
+# 對方回她、她再回、對方又回，會一層一層往下長；追太淺就會「聊到第二輪就停住」。
+MAX_REPLY_DEPTH = 10
+# 每篇貼文每輪最多打幾次 /replies，避免爆量或撞到 API 速率限制。
+MAX_REPLY_CALLS = 40
+# 每篇貼文每輪最多收幾則留言（含各層）。
+MAX_COMMENTS = 400
 
 
 def _collect_comments(client: Any, post_id: str) -> list[dict[str, Any]]:
-    """抓貼文底下的留言，包含「留言再底下的回覆」。
+    """抓貼文底下的整棵留言樹（含留言的回覆、回覆再回覆…）。
 
-    Threads 的 /replies 只保證回直接留言，所以有 has_replies 的再各抓一層。
+    Threads 的 /replies 只回「直接掛在這個 id 底下」的留言，所以要用 BFS 逐層往下：
+    貼文底下是第 1 層，留言底下是第 2 層，她回完對方再回就是第 3 層……
+    舊版只追到第 2 層，所以別人回在她的回覆下面時，那一則永遠看不到，
+    她就會停在那裡不講話。
     """
     top = client.replies(post_id)
-    seen = {str(c.get("id", "")) for c in top}
-    extra: list[dict[str, Any]] = []
-    for parent in [c for c in top if c.get("has_replies")][:MAX_NESTED_PARENTS]:
-        parent_id = str(parent.get("id", ""))
-        if not parent_id:
+
+    seen: set[str] = set()
+    collected: list[dict[str, Any]] = []
+    queue: list[tuple[str, int]] = []
+
+    for item in top:
+        item_id = str(item.get("id", ""))
+        if not item_id or item_id in seen:
             continue
+        seen.add(item_id)
+        collected.append(item)
+        if item.get("has_replies") and MAX_REPLY_DEPTH >= 2:
+            queue.append((item_id, 2))
+
+    calls = 0
+    while queue and calls < MAX_REPLY_CALLS and len(collected) < MAX_COMMENTS:
+        parent_id, depth = queue.pop(0)
+        calls += 1
         try:
             children = client.replies(parent_id)
         except ThreadsError as exc:
@@ -51,10 +71,22 @@ def _collect_comments(client: Any, post_id: str) -> list[dict[str, Any]]:
             continue
         for child in children:
             child_id = str(child.get("id", ""))
-            if child_id and child_id not in seen:
-                seen.add(child_id)
-                extra.append(child)
-    return top + extra
+            if not child_id or child_id in seen:
+                continue
+            seen.add(child_id)
+            collected.append(child)
+            if child.get("has_replies") and depth + 1 <= MAX_REPLY_DEPTH:
+                queue.append((child_id, depth + 1))
+
+    if queue:
+        log.info(
+            "留言樹還有 %s 個分支沒追完（本輪已抓 %s 則、呼叫 %s 次），下一輪會再抓",
+            len(queue),
+            len(collected),
+            calls,
+        )
+
+    return collected
 
 
 def _looks_unfinished(text: str) -> bool:
@@ -160,11 +192,19 @@ def run_replies(
     my_username = str(me.get("username", ""))
 
     data = state.load()
-    max_per_day = int(replies_cfg.get("max_per_day", 30))
+    max_per_day = int(replies_cfg.get("max_per_day", 100))
     max_per_run = int(limit or replies_cfg.get("max_per_run", 8))
     min_interval = int(replies_cfg.get("min_interval_seconds", 4))
     poll_days = int(replies_cfg.get("poll_days", 7))
     blocked = config.get("safety", {}).get("blocked_keywords", [])
+    # 完全不想再回的人：帳號放進 safety.blocked_usernames（不分大小寫、不用加 @）。
+    blocked_users = {
+        str(u).strip().lstrip("@").lower()
+        for u in (config.get("safety", {}).get("blocked_usernames") or [])
+        if str(u).strip()
+    }
+    # 同一個人一天最多回幾則；0 = 不限（預設），這樣對方一直回就一直聊。
+    per_person_cap = int(replies_cfg.get("max_per_person_per_day", 0) or 0)
 
     done_today = int(data["daily"].get("replies", 0))
     if done_today >= max_per_day:
@@ -218,8 +258,16 @@ def run_replies(
             if _is_probably_another_fish(username, body):
                 log.info("跳過另一隻大肥魚：@%s", username)
                 continue
-            if _recent_replies_to(data, username) >= 3:
-                log.info("今天已經回過 @%s 三次，先跳過", username)
+            if username.lstrip("@").lower() in blocked_users:
+                log.info("跳過封鎖名單裡的 @%s", username)
+                continue
+            if per_person_cap > 0 and _recent_replies_to(data, username) >= per_person_cap:
+                log.info(
+                    "今天已經回過 @%s %s 次（上限 %s），先跳過",
+                    username,
+                    per_person_cap,
+                    per_person_cap,
+                )
                 continue
 
             hit = textutil.contains_blocked(body, blocked)

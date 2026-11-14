@@ -62,8 +62,9 @@
   "replies": {
     "enabled": true,
     "poll_days": 7,
-    "max_per_run": 8,
-    "max_per_day": 30,
+    "max_per_run": 12,
+    "max_per_day": 100,
+    "max_per_person_per_day": 0,
     "min_interval_seconds": 4,
     "max_chars": 80
   },
@@ -137,6 +138,7 @@
       "加line",
       "加賴",
       "私訊我"
-    ]
+    ],
+    "blocked_usernames": []
   }
 }

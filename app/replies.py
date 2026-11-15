@@ -3,6 +3,7 @@ from __future__ import annotations
 import logging
 import re
 import time
+from datetime import datetime
 from typing import Any
 
 from brain import router
@@ -26,6 +27,57 @@ def _recent_replies_to(data: dict[str, Any], username: str) -> int:
         if item.get("username") == username and item.get("ts", 0) >= cutoff:
             count += 1
     return count
+
+
+def _parse_timestamp(raw: Any) -> float:
+    """Threads API 的時間是 ISO 字串（例：2026-11-14T23:59:07+0000），轉成 epoch。"""
+    if isinstance(raw, (int, float)):
+        return float(raw)
+    text = str(raw or "").strip()
+    if not text:
+        return 0.0
+    for fmt in ("%Y-%m-%dT%H:%M:%S%z", "%Y-%m-%dT%H:%M:%S.%f%z"):
+        try:
+            return datetime.strptime(text, fmt).timestamp()
+        except ValueError:
+            continue
+    return 0.0
+
+
+def _discover_own_posts(
+    client: Any, posts: list[dict[str, Any]], cutoff: float
+) -> list[dict[str, Any]]:
+    """找出「自己發的、但不在 state 名單裡」的貼文。
+
+    排程只會記錄自己發的文，所以像手動發的自我介紹、手機發的文，
+    底下有人留言時她原本完全看不到。這裡補抓回來一起巡。
+    """
+    known = {str(p.get("id", "")) for p in posts}
+    try:
+        recent = client.own_threads(limit=50)
+    except ThreadsError as exc:
+        log.warning("讀取自己的貼文清單失敗：%s", exc)
+        return []
+
+    extra: list[dict[str, Any]] = []
+    for item in recent:
+        post_id = str(item.get("id", ""))
+        if not post_id or post_id in known:
+            continue
+        ts = _parse_timestamp(item.get("timestamp"))
+        if ts and ts < cutoff:
+            continue
+        known.add(post_id)
+        extra.append(
+            {
+                "id": post_id,
+                "text": str(item.get("text") or ""),
+                "ts": ts or time.time(),
+                "media_type": item.get("media_type"),
+                "url": str(item.get("permalink") or ""),
+            }
+        )
+    return extra
 
 
 # 留言樹最多往下追幾層（貼文 → 留言 → 回覆 → 回覆的回覆…）。
@@ -213,6 +265,19 @@ def run_replies(
 
     cutoff = time.time() - poll_days * 86400
     posts = [p for p in data.get("posts", []) if p.get("ts", 0) >= cutoff]
+
+    # 不是排程發的貼文（例如手動發的自我介紹）也要一起巡留言。
+    discovered = _discover_own_posts(client, posts, cutoff)
+    if discovered:
+        posts = sorted(posts + discovered, key=lambda p: p.get("ts", 0))
+        with state.transaction() as fresh:
+            known = {str(p.get("id", "")) for p in fresh.get("posts", [])}
+            for item in discovered:
+                if str(item["id"]) not in known:
+                    fresh["posts"].append(item)
+        data = state.load()
+        log.info("補抓到 %s 篇不是排程發的貼文，一起巡留言", len(discovered))
+
     replied_count = 0
 
     for post in reversed(posts):

@@ -94,6 +94,16 @@ class ThreadsClient:
         data = body.get("data") or []
         return data[0] if data else {}
 
+    def own_threads(self, limit: int = 50) -> list[dict[str, Any]]:
+        """自己發過的串文（含手動發的），用來補巡留言。"""
+        body = self._call(
+            "GET",
+            f"{self.user_id}/threads",
+            fields="id,text,permalink,timestamp,media_type",
+            limit=limit,
+        )
+        return list(body.get("data") or [])
+
     # ------------------------------------------------------------------ 發文
     def create_text(self, text: str, reply_to_id: str | None = None) -> str:
         payload: dict[str, Any] = {

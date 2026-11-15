@@ -96,6 +96,9 @@ powershell -ExecutionPolicy Bypass -File .\scripts\install_tasks.ps1
 她會把整棵留言樹抓下來（貼文 → 留言 → 她的回覆 → 對方再回 → …），
 最多往下追 10 層，所以**對方一直回，她就一直回**，不會聊到第二輪就停。
 
+她也會自動補抓「不是排程發的貼文」（例如你在手機手動發的自我介紹），
+那些貼文底下的留言一樣會回，不用先手動登記。
+
 `config.json` → `replies`：
 
 | 欄位 | 預設 | 意思 |

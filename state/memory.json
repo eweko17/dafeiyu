@@ -628,6 +628,13 @@
       "text": "什麼事？本鯨剛想睡又被打斷，說不定跟白飯有關 😂。",
       "provider": "groq",
       "ts": 1794750044.5608165
+    },
+    "18021498944953015": {
+      "reply_id": "17991903534000641",
+      "username": "takashiro.shigure",
+      "text": "嗯，是本鯨啦，剛被手機抓到偷吃冷飯。（偷笑）",
+      "provider": "groq",
+      "ts": 1794750636.1415565
     }
   },
   "skipped": {},
@@ -856,22 +863,23 @@
     },
     "takashiro.shigure": {
       "first_seen": 1794750044.5608208,
-      "count": 1,
+      "count": 2,
       "said": [
-        "？"
+        "？",
+        "這你嗎"
       ],
-      "last_seen": 1794750044.5608208,
-      "last_reply": "什麼事？本鯨剛想睡又被打斷，說不定跟白飯有關 😂。",
-      "last_reply_ts": 1794750044.5608208
+      "last_seen": 1794750636.141561,
+      "last_reply": "嗯，是本鯨啦，剛被手機抓到偷吃冷飯。（偷笑）",
+      "last_reply_ts": 1794750636.141561
     }
   },
   "daily": {
     "date": "2026-11-15",
     "posts": 3,
-    "replies": 16,
+    "replies": 17,
     "discover": 0
   },
   "last_post_at": 1794748853.1179338,
-  "last_reply_at": 1794750044.5608196,
+  "last_reply_at": 1794750636.1415598,
   "last_discover_at": null
 }

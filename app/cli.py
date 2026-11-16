@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import argparse
 import logging
+import random
 import sys
 from datetime import datetime
 from typing import Any
@@ -95,7 +96,104 @@ def _now_local(cfg: dict[str, Any]) -> datetime:
         return datetime.now()
 
 
-def _due_slot(cfg: dict[str, Any], data: dict[str, Any], now: datetime) -> int | None:
+def _parse_hhmm(text: Any) -> int | None:
+    """'09:30' → 570（分鐘）；格式不對回 None。"""
+    try:
+        hour, minute = (int(part) for part in str(text).split(":", 1))
+    except (ValueError, TypeError):
+        return None
+    if not (0 <= hour <= 23 and 0 <= minute <= 59):
+        return None
+    return hour * 60 + minute
+
+
+def _random_slots(cfg: dict[str, Any], count: int, day: str) -> list[str]:
+    """替這一天抽 count 個時間點。
+
+    種子用日期，所以同一天不管重算幾次都一樣；實際結果也會存進 state，
+    下一輪直接沿用，不會每 10 分鐘就換一次時間。
+    """
+    posting = cfg.get("posting", {})
+    window = posting.get("random_window") or ["08:00", "23:00"]
+    start = _parse_hhmm(window[0]) if len(window) > 0 else None
+    end = _parse_hhmm(window[1]) if len(window) > 1 else None
+    start = 8 * 60 if start is None else start
+    end = 23 * 60 if end is None else end
+    if end <= start:
+        start, end = 8 * 60, 23 * 60
+
+    gap = max(0, int(posting.get("min_gap_minutes", 90) or 0))
+    rng = random.Random(f"{day}|{count}")
+
+    picks: list[int] = []
+    for _ in range(400):
+        candidate = sorted(rng.randrange(start, end) for _ in range(count))
+        if all(b - a >= gap for a, b in zip(candidate, candidate[1:])):
+            picks = candidate
+            break
+    if not picks:
+        # 窗口真的太窄塞不下，就平均分（至少不會全部撞在一起）
+        span = end - start
+        picks = [start + int(span * i / count) for i in range(count)]
+    return [f"{minute // 60:02d}:{minute % 60:02d}" for minute in picks]
+
+
+def _ensure_slots(cfg: dict[str, Any], now: datetime) -> list[str]:
+    """今天的發文時間。固定模式讀 config；隨機模式抽一次並存進 state。"""
+    posting = cfg.get("posting", {})
+    max_per_day = int(posting.get("max_per_day", 3))
+    if not posting.get("random_slots"):
+        return [str(slot) for slot in (posting.get("slots") or [])]
+
+    day = now.date().isoformat()
+    data = state.load()
+    saved = data.get("schedule") or {}
+    times = [str(t) for t in (saved.get("times") or [])]
+    if saved.get("date") == day and len(times) == max_per_day:
+        return times
+
+    times = _random_slots(cfg, max_per_day, day)
+    with state.transaction() as fresh:
+        current = fresh.get("schedule") or {}
+        current_times = [str(t) for t in (current.get("times") or [])]
+        if current.get("date") == day and len(current_times) == max_per_day:
+            # 另一輪剛好先寫進去了，照它的
+            times = current_times
+        else:
+            fresh["schedule"] = {"date": day, "times": times, "fired": []}
+    return times
+
+
+def _mark_slot(
+    now: datetime, slot: int, slots: list[str], *, fired: bool = True
+) -> None:
+    """記下這個時段已經發過（或發失敗要放回去重試）。
+
+    只靠「今天已發幾篇」判斷會有一個問題：如果前面有時段被跳過，
+    後面同一個時段在 40 分鐘內會被每一輪重複觸發，變成短時間連發。
+    """
+    day = now.date().isoformat()
+    with state.transaction() as fresh:
+        saved = fresh.get("schedule") or {}
+        if saved.get("date") != day or [
+            str(t) for t in (saved.get("times") or [])
+        ] != [str(t) for t in slots]:
+            saved = {"date": day, "times": list(slots), "fired": []}
+        done = {int(x) for x in (saved.get("fired") or [])}
+        if fired:
+            done.add(int(slot))
+        else:
+            done.discard(int(slot))
+        saved["fired"] = sorted(done)
+        fresh["schedule"] = saved
+
+
+def _due_slot(
+    cfg: dict[str, Any],
+    data: dict[str, Any],
+    now: datetime,
+    slots: list[str] | None = None,
+) -> int | None:
     """現在該發第幾篇？不是發文時間就回 None。
 
     判斷方式：離某個 slot 不超過「提前 10 分、延後 40 分」，
@@ -103,18 +201,30 @@ def _due_slot(cfg: dict[str, Any], data: dict[str, Any], now: datetime) -> int |
     延後 40 分是給 GitHub 排程的延遲留空間。
     """
     posting = cfg.get("posting", {})
-    slots = posting.get("slots") or []
+    if slots is None:
+        slots = posting.get("slots") or []
     posted = int((data.get("daily") or {}).get("posts", 0))
     max_per_day = int(posting.get("max_per_day", 3))
     if posted >= max_per_day:
         return None
 
+    # 今天已經觸發過的時段就不要再發一次。
+    saved = data.get("schedule") or {}
+    done: set[int] = set()
+    if saved.get("date") == now.date().isoformat() and [
+        str(t) for t in (saved.get("times") or [])
+    ] == [str(t) for t in slots]:
+        done = {int(x) for x in (saved.get("fired") or [])}
+
     for index, hhmm in enumerate(slots, start=1):
-        try:
-            hour, minute = (int(part) for part in str(hhmm).split(":", 1))
-        except ValueError:
+        if index in done:
             continue
-        slot_time = now.replace(hour=hour, minute=minute, second=0, microsecond=0)
+        slot_minutes = _parse_hhmm(hhmm)
+        if slot_minutes is None:
+            continue
+        slot_time = now.replace(
+            hour=slot_minutes // 60, minute=slot_minutes % 60, second=0, microsecond=0
+        )
         minutes = (now - slot_time).total_seconds() / 60
         if -10 <= minutes <= 40 and posted < index:
             return index
@@ -125,14 +235,20 @@ def cmd_auto(_: argparse.Namespace) -> int:
     """雲端排程用：時間到了就發文，順便回覆留言。"""
     cfg, secrets = _load()
     now = _now_local(cfg)
+    slots = _ensure_slots(cfg, now)
     data = state.load()
     posted = int((data.get("daily") or {}).get("posts", 0))
     max_per_day = int(cfg.get("posting", {}).get("max_per_day", 3))
 
     rc = 0
-    slot = _due_slot(cfg, data, now)
+    slot = _due_slot(cfg, data, now, slots)
     if slot is not None:
-        print(f"現在 {now:%H:%M}，輪到第 {slot} 篇（今天已發 {posted}/{max_per_day}）。")
+        print(
+            f"現在 {now:%H:%M}，輪到第 {slot} 篇（今天已發 {posted}/{max_per_day}；"
+            f"今日排程 {'、'.join(slots)}）。"
+        )
+        # 先記下來，避免同一時段在 40 分鐘內被每一輪重複觸發。
+        _mark_slot(now, slot, slots)
         result = post_mod.create_post(cfg, secrets, slot=slot)
         if result.get("dry_run"):
             print(result.get("text", ""))
@@ -140,6 +256,8 @@ def cmd_auto(_: argparse.Namespace) -> int:
             reason = str(result.get("reason"))
             print(f"沒有發文：{reason}")
             if reason.startswith("生成失敗") or reason.startswith("threads_error"):
+                # 真的失敗才放回去，下一輪（還在時間窗內）再試一次。
+                _mark_slot(now, slot, slots, fired=False)
                 rc = 1
         else:
             print(f"已發文：{result.get('id')}")

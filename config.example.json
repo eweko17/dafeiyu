@@ -33,10 +33,18 @@
   },
   "posting": {
     "enabled": true,
-    "max_per_day": 3,
+    "max_per_day": 5,
+    "random_slots": true,
+    "random_window": [
+      "08:00",
+      "23:00"
+    ],
+    "min_gap_minutes": 90,
     "slots": [
       "09:30",
-      "14:30",
+      "12:30",
+      "15:30",
+      "18:30",
       "21:30"
     ],
     "min_chars": 100,
@@ -48,6 +56,7 @@
     "enabled": true,
     "mode": "memes",
     "max_per_post": 2,
+    "avoid_repeat_posts": 2,
     "base_url": "https://eweko17.github.io/dafeiyu/memes/",
     "manifest": "docs/memes/memes.json",
     "alt_prefix": "大肥魚表情包：",

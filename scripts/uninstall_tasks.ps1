@@ -5,7 +5,10 @@ $names = @(
     'DaFeiYu-Post-1',
     'DaFeiYu-Post-2',
     'DaFeiYu-Post-3',
+    'DaFeiYu-Post-4',
+    'DaFeiYu-Post-5',
     'DaFeiYu-Replies',
+    'DaFeiYu-Auto',
     'DaFeiYu-RefreshToken'
 )
 

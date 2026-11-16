@@ -3,8 +3,8 @@
 一隻住在 Threads 上的 AI 鯨魚女僕。**完全免費**、資料留在自己的筆電、不用付任何 API 費用。
 
 - 大腦：本機 Ollama 或 Groq（免費），可互換
-- 發文：一天最多 3 篇，繁體中文、台灣用語
-- 配圖：每篇自動附 1～2 張大肥魚表情包（專案內建靜態圖；挑不到會自動退回純文字）
+- 發文：一天最多 5 篇，時間每天隨機，繁體中文、台灣用語
+- 配圖：每篇自動附 1～2 張大肥魚表情包（專案內建靜態圖；不會連續兩篇用同一張）
 - 桌寵：附贈 `dsh-pet` 獨立版，100+ 段透明動畫，解壓就能跑
 - 平台：Windows 10/11，Python 3.10+
 - 手機：PWA（加到主畫面）或 APK，聊天／語音／記憶，見 `docs/手機版-App.md`（網址 <https://eweko17.github.io/dafeiyu/app/>）
@@ -87,9 +87,32 @@ powershell -ExecutionPolicy Bypass -File .\install.ps1
 powershell -ExecutionPolicy Bypass -File .\scripts\install_tasks.ps1
 ```
 
-- 每天 09:30 / 14:30 / 21:30 各發一篇
+- 每天 5 篇：08:00–23:00 之間隨機抽 5 個時間點，間隔至少 90 分鐘
 - 09:00–23:00 每 10 分鐘檢查一次留言並回覆
 - 每週日 03:00 自動更新 token（本機用的；雲端版要自己更新 GitHub Secrets）
+
+### 5-1. 發文時間怎麼抽
+
+`config.json` → `posting`：
+
+| 欄位 | 預設 | 意思 |
+|---|---|---|
+| `max_per_day` | 5 | 一天最多發幾篇 |
+| `random_slots` | true | `true`＝每天隨機抽時間；`false`＝照 `slots` 固定時間 |
+| `random_window` | `["08:00","23:00"]` | 隨機時間的範圍（台灣時間） |
+| `min_gap_minutes` | 90 | 兩篇之間至少隔幾分鐘 |
+| `slots` | 5 個時間 | 只有 `random_slots=false` 時才會用到 |
+
+抽出來的那組時間會寫進 `state/memory.json` 的 `schedule`，**當天就固定不動**，
+所以不會每 10 分鐘重新抽一次。每天午夜過後會自動換新的一組。
+
+### 5-2. 圖片不要一直重複
+
+`config.json` → `images.avoid_repeat_posts`（預設 `2`）：
+
+- 會排除「最近 2 篇貼文用過的表情包」，所以同一張圖不會連續出現
+- 就算主題只對得上那一張（例如一直聊白飯），也會改挑別張，不會硬重複
+- 設成 `1` 就只保證「不要連續兩篇相同」
 
 ### 6. 留言要聊多久
 
@@ -217,7 +240,7 @@ powershell -ExecutionPolicy Bypass -File .\scripts\resume_tasks.ps1   # 恢復
 
 ## 安全與倫理
 
-- **不洗版**：一天最多 3 篇、回覆上限 30 則，遠低於平台上限。
+- **不洗版**：一天最多 5 篇、回覆上限 100 則，遠低於平台上限。
 - **不主動私訊**：程式沒有私訊功能。
 - **標示 AI**：每篇貼文都帶 `is_made_with_ai=true`，Threads 會顯示 AI 標籤。
 - **敏感話題閃避**：政治、宗教、災難、醫療、投資、色情、廣告，一律跳過。
@@ -235,7 +258,7 @@ powershell -ExecutionPolicy Bypass -File .\scripts\resume_tasks.ps1   # 恢復
 ## 常見問題
 
 **Q：筆電很慢，跑得動嗎？**
-7B 模型在 i5-1235U + 16GB RAM 上實測一篇貼文約 30–50 秒（第一次要載入模型會多 30 秒）。一天三次，不影響日常使用，但跑的時候風扇會轉大聲一點。
+7B 模型在 i5-1235U + 16GB RAM 上實測一篇貼文約 30–50 秒（第一次要載入模型會多 30 秒）。一天五次，不影響日常使用，但跑的時候風扇會轉大聲一點。
 
 如果覺得太慢，把 `config.json` 的 `brain.ollama.model` 改成 `qwen2.5:3b-instruct`（已裝好），速度約快一倍，內容會比較跳一點。
 
@@ -254,11 +277,13 @@ powershell -ExecutionPolicy Bypass -File .\scripts\resume_tasks.ps1   # 恢復
 **Q：可以改個性嗎？**
 改 `persona/大肥魚.md`，下次發文就會生效。
 
-**Q：可以改成一天一篇嗎？**
-改 `config.json` 的 `posting.slots` 與 `max_per_day`，再重跑 `install_tasks.ps1`。
+**Q：可以改發文篇數或時間嗎？**
+改 `config.json` 的 `posting.max_per_day`（篇數）與 `random_window`（時間範圍），
+雲端下一輪就會生效；本機則要重跑 `install_tasks.ps1`。
+想改成固定時間就把 `random_slots` 設成 `false`，並在 `slots` 填時間。
 
 **Q：桌寵會不會很吃記憶體？**
 待機約 300–400 MB（實測 355 MB），關掉就是 0；只有在碎碎念／對話時才會叫模型，而且模型閒置 2 分鐘自動卸載。詳見上面「桌寵」段。
 
 **Q：會被 Meta 鎖嗎？**
-正常使用（一天 1–3 篇、不洗版、不主動騷擾）風險很低。主動回陌生人的功能要等審核，就是因為平台不喜歡大量主動回覆。
+正常使用（一天 5 篇、不洗版、不主動騷擾）風險很低。主動回陌生人的功能要等審核，就是因為平台不喜歡大量主動回覆。

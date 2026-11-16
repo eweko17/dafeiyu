@@ -22,7 +22,7 @@ import requests
 
 from brain import router
 
-from . import persona, textutil
+from . import persona, state, textutil
 from .paths import ROOT
 
 log = logging.getLogger("dafeiyu.images")
@@ -93,6 +93,24 @@ def _score(item: dict[str, Any], haystack: str) -> int:
     return sum(1 for tag in item.get("tags", []) if tag and tag in haystack)
 
 
+def _recent_memes(posts_back: int) -> set[str]:
+    """最近幾篇貼文用過的表情包 id（用來避免連續重複）。"""
+    if posts_back <= 0:
+        return set()
+    try:
+        data = state.load()
+    except Exception:  # noqa: BLE001
+        return set()
+    used: set[str] = set()
+    for post in (data.get("posts") or [])[-posts_back:]:
+        for meme in post.get("image_memes") or []:
+            if meme:
+                used.add(str(meme))
+        if post.get("image_meme"):
+            used.add(str(post["image_meme"]))
+    return used
+
+
 def _select_memes(
     config: dict[str, Any],
     post_text: str,
@@ -109,17 +127,30 @@ def _select_memes(
     if not items:
         return []
 
+    avoid_posts = max(0, int(cfg.get("avoid_repeat_posts", 2) or 0))
+    recent = _recent_memes(avoid_posts)
+    fresh_items = [item for item in items if str(item.get("id")) not in recent]
+    if not fresh_items:
+        # 圖庫小到全部都用過時，至少還是要有圖
+        fresh_items = items
+
     haystack = "\n".join([post_text or "", topic or "", mood or ""])
     hits = [(item, _score(item, haystack)) for item in items]
     hits = [(item, score) for item, score in hits if score > 0]
 
-    if hits:
+    # 先排除最近用過的，避免連續兩篇長得一樣。
+    fresh_hits = [(item, score) for item, score in hits if str(item.get("id")) not in recent]
+
+    if fresh_hits:
         # 分數高的優先；同分隨機，避免每次都同一張
-        hits.sort(key=lambda pair: (-pair[1], random.random()))
-        chosen = [item for item, _ in hits[:max_per_post]]
+        fresh_hits.sort(key=lambda pair: (-pair[1], random.random()))
+        chosen = [item for item, _ in fresh_hits[:max_per_post]]
+    elif hits:
+        # 命中的都被排除了（例如主題很窄）→ 改從沒用過的圖隨機挑，至少不重複
+        chosen = random.sample(fresh_items, min(max_per_post, len(fresh_items)))
     else:
         # 完全沒有關鍵字命中時，只放一張，避免兩張都文不對題
-        chosen = [random.choice(items)]
+        chosen = random.sample(fresh_items, 1)
 
     alt_prefix = str(cfg.get("alt_prefix") or DEFAULT_ALT_PREFIX)
     result: list[dict[str, Any]] = []

@@ -20,6 +20,7 @@ DEFAULT_STATE: dict[str, Any] = {
     "skipped": {},
     "people": {},
     "daily": {"date": None, "posts": 0, "replies": 0, "discover": 0},
+    "schedule": {},
     "last_post_at": None,
     "last_reply_at": None,
     "last_discover_at": None,

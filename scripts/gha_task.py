@@ -1,9 +1,8 @@
 """GitHub Actions 用：依排程時間（UTC）決定要跑哪個指令。
 
-GitHub 的 cron 一律是 UTC，台灣是 UTC+8：
-    01:30 UTC = 09:30 台灣
-    06:30 UTC = 14:30 台灣
-    13:30 UTC = 21:30 台灣
+GitHub 的 cron 一律是 UTC，台灣是 UTC+8。
+實際的發文時間由 app.cli auto 依 config 隨機決定（一天 5 篇），
+這裡只負責每 10 分鐘叫一次 auto。
 """
 
 from __future__ import annotations
@@ -27,6 +26,8 @@ MANUAL_TASKS: dict[str, list[str]] = {
     "post-1": ["post", "--slot", "1"],
     "post-2": ["post", "--slot", "2"],
     "post-3": ["post", "--slot", "3"],
+    "post-4": ["post", "--slot", "4"],
+    "post-5": ["post", "--slot", "5"],
     "replies": ["replies"],
     "discover": ["discover"],
     "discover-dry": ["discover", "--dry-run"],

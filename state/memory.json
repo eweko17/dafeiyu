@@ -995,6 +995,17 @@
     "replies": 0,
     "discover": 0
   },
+  "schedule": {
+    "date": "2026-11-16",
+    "times": [
+      "10:22",
+      "12:09",
+      "14:58",
+      "18:02",
+      "20:45"
+    ],
+    "fired": []
+  },
   "last_post_at": 1794835260.6352496,
   "last_reply_at": 1794785458.659,
   "last_discover_at": null

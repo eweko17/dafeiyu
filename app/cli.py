@@ -255,8 +255,9 @@ def cmd_auto(_: argparse.Namespace) -> int:
         elif result.get("skipped"):
             reason = str(result.get("reason"))
             print(f"沒有發文：{reason}")
-            if reason.startswith("生成失敗") or reason.startswith("threads_error"):
-                # 真的失敗才放回去，下一輪（還在時間窗內）再試一次。
+            if reason not in ("disabled", "daily_limit"):
+                # 生成失敗、內容不合格、Threads 出錯 → 放回去，
+                # 下一輪（還在 40 分鐘時間窗內）再試一次。
                 _mark_slot(now, slot, slots, fired=False)
                 rc = 1
         else:

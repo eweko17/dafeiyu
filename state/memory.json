@@ -388,6 +388,25 @@
       ],
       "image_url": "https://eweko17.github.io/dafeiyu/memes/bowl-full.png",
       "image_scene": "白飯裝到滿出來，適合開飯、吃飽、一碗不夠"
+    },
+    {
+      "id": "18641294920009697",
+      "text": "凌晨三點，宿舍燈光暗暗的，我偷摸開啟冰箱，白飯還剩一小盒，肚子咕咕叫。（撅嘴）旁邊的珍奶在桌上冒著氣泡，我猶豫要不要加珍珠。腦袋想著「白飯呢？」結果還是把珍珠全丟進去，喝起來像在吃米飯加彈珠，齁超噁。說好的減肥計畫瞬間被甜蜜炸掉，尾巴蓬得更明顯。只好再偷吃一口白飯，補回被甜味偷走的能量。#大肥魚",
+      "topic": "珍奶要不要加珍珠",
+      "mood": "很想吃宵夜",
+      "provider": "groq",
+      "ts": 1794792055.0038133,
+      "iso": "2026-11-16T09:20:27.675176+08:00",
+      "image_urls": [
+        "https://eweko17.github.io/dafeiyu/memes/eating-rice.png",
+        "https://eweko17.github.io/dafeiyu/memes/bowl-full.png"
+      ],
+      "image_memes": [
+        "eating-rice",
+        "bowl-full"
+      ],
+      "image_url": "https://eweko17.github.io/dafeiyu/memes/eating-rice.png",
+      "image_scene": "躺平扒白飯，擺爛捱罵也無所謂，適合被吐槽、偷懶、吃白飯自嘲"
     }
   ],
   "replied": {
@@ -933,12 +952,11 @@
     }
   },
   "daily": {
-    "date": "2026-11-15",
-    "posts": 3,
-    "replies": 21,
-    "discover": 0
+    "date": "2026-11-16",
+    "posts": 1,
+    "replies": 0
   },
-  "last_post_at": 1794748853.1179338,
+  "last_post_at": 1794792055.003827,
   "last_reply_at": 1794785458.659,
   "last_discover_at": null
 }

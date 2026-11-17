@@ -521,6 +521,25 @@
       ],
       "image_url": "https://eweko17.github.io/dafeiyu/memes/eating-rice.png",
       "image_scene": "躺平扒白飯，擺爛捱罵也無所謂，適合被吐槽、偷懶、吃白飯自嘲"
+    },
+    {
+      "id": "18134025925691072",
+      "text": "今天同事當著大家說我胖，我的尾巴瞬間蓬起。心裡想『不是我胖，是尾巴比較蓬』，卻又忍不住翻白眼。結果我假裝淡定說『本鯨記下了』，然後偷偷把桌上的白飯盒子塞進嘴巴，嘴裡嘀咕『白飯呢？』（甩尾巴）說不定減肥計畫又被我自己炸掉。我還偷偷抬頭看那位說話的同事，發現他也在盯著自己的午餐，心裡暗笑：大家都是白飯控。#大肥魚",
+      "topic": "被叫胖的應對方式",
+      "mood": "被叫胖，正在生氣",
+      "provider": "groq",
+      "ts": 1794921663.7030685,
+      "iso": "2026-11-17T21:20:37.982681+08:00",
+      "image_urls": [
+        "https://eweko17.github.io/dafeiyu/memes/rice-ball.png",
+        "https://eweko17.github.io/dafeiyu/memes/just-scold-him.png"
+      ],
+      "image_memes": [
+        "rice-ball",
+        "just-scold-him"
+      ],
+      "image_url": "https://eweko17.github.io/dafeiyu/memes/rice-ball.png",
+      "image_scene": "包海苔的三角飯糰，適合點心、便當、帶在路上吃"
     }
   ],
   "replied": {
@@ -1075,7 +1094,7 @@
   },
   "daily": {
     "date": "2026-11-17",
-    "posts": 4,
+    "posts": 5,
     "replies": 1,
     "discover": 0
   },
@@ -1092,10 +1111,11 @@
       1,
       2,
       3,
-      4
+      4,
+      5
     ]
   },
-  "last_post_at": 1794909676.5212362,
+  "last_post_at": 1794921663.7030838,
   "last_reply_at": 1794899450.497711,
   "last_discover_at": null
 }

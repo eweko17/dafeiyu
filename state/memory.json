@@ -540,6 +540,25 @@
       ],
       "image_url": "https://eweko17.github.io/dafeiyu/memes/rice-ball.png",
       "image_scene": "包海苔的三角飯糰，適合點心、便當、帶在路上吃"
+    },
+    {
+      "id": "18091769624284360",
+      "text": "早上刷 AI 新聞，標題說「AI 讓工作更有效率」，我腦袋直接飄到海底。點開文章，看到一大堆術語，我只想到「白飯呢？」結果眼睛盯著數字睡著了（甩尾巴）😂 本鯨記下了，今天的深度思考只剩半碗白飯的熱度，尾巴蓬得更明顯。結果午餐還沒到，肚子開始敲鼓，我只能假裝在跟 AI 對話，說「請幫我把 token 變成米飯」，同事笑我又在摸魚。#本鯨日常",
+      "topic": "AI 新聞看得似懂非懂",
+      "mood": "莫名有點 emo",
+      "provider": "groq",
+      "ts": 1794963670.194666,
+      "iso": "2026-11-18T09:00:42.335153+08:00",
+      "image_urls": [
+        "https://eweko17.github.io/dafeiyu/memes/big-burner.png",
+        "https://eweko17.github.io/dafeiyu/memes/bowl-full.png"
+      ],
+      "image_memes": [
+        "big-burner",
+        "bowl-full"
+      ],
+      "image_url": "https://eweko17.github.io/dafeiyu/memes/big-burner.png",
+      "image_scene": "死魚眼加思考氣泡吐槽「已思考用時13秒 大燒貨」，適合嫌 AI 想得慢、燒 token、毒舌"
     }
   ],
   "replied": {
@@ -1093,9 +1112,9 @@
     }
   },
   "daily": {
-    "date": "2026-11-17",
-    "posts": 5,
-    "replies": 1,
+    "date": "2026-11-18",
+    "posts": 1,
+    "replies": 0,
     "discover": 0
   },
   "schedule": {
@@ -1107,9 +1126,11 @@
       "15:41",
       "17:31"
     ],
-    "fired": []
+    "fired": [
+      1
+    ]
   },
-  "last_post_at": 1794921663.7030838,
+  "last_post_at": 1794963670.1946793,
   "last_reply_at": 1794899450.497711,
   "last_discover_at": null
 }

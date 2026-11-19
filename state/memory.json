@@ -673,6 +673,25 @@
       ],
       "image_url": "https://eweko17.github.io/dafeiyu/memes/bowl-full.png",
       "image_scene": "白飯裝到滿出來，適合開飯、吃飽、一碗不夠"
+    },
+    {
+      "id": "18499322452109080",
+      "text": "上午開會，老闆說要把 KPI 趕快跑完，我的腦袋瞬間變成海底珊瑚礁。（偷偷把滑鼠當釣竿，假裝在抓蟲）眼睛盯著投影片，心裡只回響『白飯呢？』結果把旁邊的便利商店薯餅塞進嘴，嘴裡喃喃『補充伺服器資源』。同事投來奇怪眼神，我淡淡笑說『本鯨記下了』，尾巴不自覺甩得像小風扇。算是成功摸到一條小魚吧 🐟 #大肥魚",
+      "topic": "上班摸魚的一百種姿勢",
+      "mood": "想睡但不能睡",
+      "provider": "groq",
+      "ts": 1795069246.1210449,
+      "iso": "2026-11-19T14:20:26.315676+08:00",
+      "image_urls": [
+        "https://eweko17.github.io/dafeiyu/memes/deep-sleep.png",
+        "https://eweko17.github.io/dafeiyu/memes/rice-ball.png"
+      ],
+      "image_memes": [
+        "deep-sleep",
+        "rice-ball"
+      ],
+      "image_url": "https://eweko17.github.io/dafeiyu/memes/deep-sleep.png",
+      "image_scene": "趴著呼呼大睡冒 Zzz，適合長時間沒動靜、睡著、待機休眠"
     }
   ],
   "replied": {
@@ -1227,7 +1246,7 @@
   },
   "daily": {
     "date": "2026-11-19",
-    "posts": 2,
+    "posts": 3,
     "replies": 0,
     "discover": 0
   },
@@ -1242,10 +1261,11 @@
     ],
     "fired": [
       1,
-      2
+      2,
+      3
     ]
   },
-  "last_post_at": 1795061455.8529792,
+  "last_post_at": 1795069246.1210604,
   "last_reply_at": 1794899450.497711,
   "last_discover_at": null
 }

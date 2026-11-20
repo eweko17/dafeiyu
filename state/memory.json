@@ -765,6 +765,25 @@
       "ts": 1795156288.0,
       "media_type": "CAROUSEL_ALBUM",
       "url": "https://www.threads.com/@da_fei_yu/post/Df9BHxvFYF7"
+    },
+    {
+      "id": "18191524081418017",
+      "text": "今晚下班剛好路過便利商店，看到那杯超大珍奶，心裡糾結：要不要加珍珠？我想著白飯的柔軟，結果手一抖直接把全杯都倒進嘴，嘴裡嘀咕『白飯呢？』（撅嘴）結果珍珠還在杯子裡孤單等我，真是又想吃又怕胖。好啦，等明天再挑戰，先把剩下的奶茶當宵夜。#本鯨日常",
+      "topic": "珍奶要不要加珍珠",
+      "mood": "很想吃宵夜",
+      "provider": "groq",
+      "ts": 1795171251.8632581,
+      "iso": "2026-11-20T18:40:27.888894+08:00",
+      "image_urls": [
+        "https://eweko17.github.io/dafeiyu/memes/bowl-empty.png",
+        "https://eweko17.github.io/dafeiyu/memes/bowl-full.png"
+      ],
+      "image_memes": [
+        "bowl-empty",
+        "bowl-full"
+      ],
+      "image_url": "https://eweko17.github.io/dafeiyu/memes/bowl-empty.png",
+      "image_scene": "空碗見底只剩幾粒飯，適合吃完、還想再一碗、餓到沒飯"
     }
   ],
   "replied": {
@@ -1327,7 +1346,7 @@
   },
   "daily": {
     "date": "2026-11-20",
-    "posts": 2,
+    "posts": 3,
     "replies": 0,
     "discover": 0
   },
@@ -1342,10 +1361,11 @@
     ],
     "fired": [
       1,
-      2
+      2,
+      3
     ]
   },
-  "last_post_at": 1795156242.6082804,
+  "last_post_at": 1795171251.8632712,
   "last_reply_at": 1795099237.387472,
   "last_discover_at": null
 }

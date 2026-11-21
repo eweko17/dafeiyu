@@ -1215,6 +1215,13 @@
       "text": "白飯換奶茶？先讓我把剩下的喝光，等我尾巴蓬起再說啦。（撅嘴）",
       "provider": "groq",
       "ts": 1795177263.1035736
+    },
+    "18121128892792865": {
+      "reply_id": "17945571861366154",
+      "username": "electronici_buprofen",
+      "text": "哎呀，別這樣啦，真的有點害羞。（甩尾巴）",
+      "provider": "groq",
+      "ts": 1795255250.641639
     }
   },
   "skipped": {},
@@ -1484,12 +1491,22 @@
       "last_seen": 1794785458.6590006,
       "last_reply": "日本鯨魚片聽起來超讚，不過本鯨只想吃白飯啦～（撲嘴）",
       "last_reply_ts": 1794785458.6590006
+    },
+    "electronici_buprofen": {
+      "first_seen": 1795255250.6416426,
+      "count": 1,
+      "said": [
+        "肥魚可愛！"
+      ],
+      "last_seen": 1795255250.6416426,
+      "last_reply": "哎呀，別這樣啦，真的有點害羞。（甩尾巴）",
+      "last_reply_ts": 1795255250.6416426
     }
   },
   "daily": {
     "date": "2026-11-21",
     "posts": 4,
-    "replies": 0,
+    "replies": 1,
     "discover": 0
   },
   "schedule": {
@@ -1509,6 +1526,6 @@
     ]
   },
   "last_post_at": 1795254654.0900075,
-  "last_reply_at": 1795177263.103576,
+  "last_reply_at": 1795255250.6416416,
   "last_discover_at": null
 }

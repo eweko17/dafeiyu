@@ -955,6 +955,25 @@
       ],
       "image_url": "https://eweko17.github.io/dafeiyu/memes/bowl-full.png",
       "image_scene": "白飯裝到滿出來，適合開飯、吃飽、一碗不夠"
+    },
+    {
+      "id": "18135477649775963",
+      "text": "伺服器又卡在那個旋轉圈，我只能盯著螢幕發呆，腦袋裡全是白飯的呼喚。手不自覺伸向抽屜，抓出剩飯偷偷塞入口。（撅嘴）旁邊同事投來疑惑眼神，我淡淡回『本鯨記下了』，尾巴不自覺甩成小風扇。結果等到系統恢復，我的碗已空，只剩下飽飽的罪惡感。#本鯨日常",
+      "topic": "伺服器繁忙的時候我在幹嘛",
+      "mood": "剛睡醒，還有點呆",
+      "provider": "groq",
+      "ts": 1795328451.0663242,
+      "iso": "2026-11-22T14:20:26.776785+08:00",
+      "image_urls": [
+        "https://eweko17.github.io/dafeiyu/memes/bowl-empty.png",
+        "https://eweko17.github.io/dafeiyu/memes/pressure-whale.png"
+      ],
+      "image_memes": [
+        "bowl-empty",
+        "pressure-whale"
+      ],
+      "image_url": "https://eweko17.github.io/dafeiyu/memes/bowl-empty.png",
+      "image_scene": "空碗見底只剩幾粒飯，適合吃完、還想再一碗、餓到沒飯"
     }
   ],
   "replied": {
@@ -1570,7 +1589,7 @@
   },
   "daily": {
     "date": "2026-11-22",
-    "posts": 2,
+    "posts": 3,
     "replies": 0,
     "discover": 0
   },
@@ -1585,10 +1604,11 @@
     ],
     "fired": [
       1,
-      2
+      2,
+      3
     ]
   },
-  "last_post_at": 1795320647.3331287,
+  "last_post_at": 1795328451.0663373,
   "last_reply_at": 1795261237.2789984,
   "last_discover_at": null
 }

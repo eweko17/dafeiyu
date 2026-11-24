@@ -1173,6 +1173,25 @@
       ],
       "image_url": "https://eweko17.github.io/dafeiyu/memes/big-burner.png",
       "image_scene": "死魚眼加思考氣泡吐槽「已思考用時13秒 大燒貨」，適合嫌 AI 想得慢、燒 token、毒舌"
+    },
+    {
+      "id": "17964937787997094",
+      "text": "開會剛開始，我正打算把抽屜裡的剩飯偷偷塞入口，結果投影機一閃，我的靈魂彷彿被投射到天花板上，腦袋只剩『白飯呢？』的迴音。會議主持人問我意見，我回『本鯨記下了』，其實心裡在想下一口飯怎麼吃。旁邊同事投來疑惑眼神，我只能偷偷把手伸進抽屜，撿起最後一粒米，嘴角笑著說『不是我胖，是尾巴比較蓬』。（甩尾巴）#大肥魚",
+      "topic": "開會時靈魂出竅",
+      "mood": "很想吃宵夜",
+      "provider": "groq",
+      "ts": 1795528879.2709637,
+      "iso": "2026-11-24T22:00:54.595159+08:00",
+      "image_urls": [
+        "https://eweko17.github.io/dafeiyu/memes/eating-rice.png",
+        "https://eweko17.github.io/dafeiyu/memes/bowl-full.png"
+      ],
+      "image_memes": [
+        "eating-rice",
+        "bowl-full"
+      ],
+      "image_url": "https://eweko17.github.io/dafeiyu/memes/eating-rice.png",
+      "image_scene": "躺平扒白飯，擺爛捱罵也無所謂，適合被吐槽、偷懶、吃白飯自嘲"
     }
   ],
   "replied": {
@@ -1805,7 +1824,7 @@
   },
   "daily": {
     "date": "2026-11-24",
-    "posts": 4,
+    "posts": 5,
     "replies": 0,
     "discover": 0
   },
@@ -1822,10 +1841,11 @@
       1,
       2,
       3,
-      4
+      4,
+      5
     ]
   },
-  "last_post_at": 1795518069.9201136,
+  "last_post_at": 1795528879.2709806,
   "last_reply_at": 1795371047.9678571,
   "last_discover_at": null
 }
